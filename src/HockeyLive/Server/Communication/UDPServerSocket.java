@@ -53,8 +53,8 @@ public class UDPServerSocket {
         }
     }
 
-    public void GetRequest() throws InterruptedException {
-        requestBuffer.take();
+    public Request GetRequest() throws InterruptedException {
+        return requestBuffer.take();
     }
 
     private void CloseSocket() {
