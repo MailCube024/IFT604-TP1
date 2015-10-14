@@ -11,7 +11,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Created by Michael on 10/12/2015.
  */
 public class ServerSocket {
     private DatagramSocket epSocket;
@@ -31,24 +31,22 @@ public class ServerSocket {
         while (true) {
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             try {
+                if (tReceive.isInterrupted()) break;
                 epSocket.receive(packet);
                 Request req = (Request) SerializationHelper.deserialize(packet.getData());
-                requestBuffer.add(req);
+                requestBuffer.put(req);
             } catch (Exception e) {
-                e.printStackTrace();
                 CloseSocket();
+                break;
             }
-            if(tReceive.isInterrupted()) break;
         }
     }
 
     public void SendReply(Reply reply) {
         try {
             byte[] data = SerializationHelper.serialize(reply);
-            DatagramPacket packet = new DatagramPacket(data, data.length, reply.GetIPAddress(), reply.GetPort());
-            DatagramSocket replySocket = new DatagramSocket();
-            replySocket.send(packet);
-            replySocket.close();
+            DatagramPacket packet = new DatagramPacket(data, data.length, reply.getReceiverIp(), reply.getReceiverPort());
+            epSocket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -59,8 +57,8 @@ public class ServerSocket {
     }
 
     public void CloseSocket() {
-        if (epSocket.isConnected())
-            epSocket.close();
+        tReceive.interrupt();
+        epSocket.close();
     }
 
     @Override
