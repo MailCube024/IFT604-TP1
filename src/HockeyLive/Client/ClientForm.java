@@ -1,6 +1,5 @@
 package HockeyLive.Client;
 
-import HockeyLive.Server.Models.Game;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
