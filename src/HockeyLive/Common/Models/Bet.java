@@ -10,21 +10,25 @@ import java.io.Serializable;
 public class Bet implements Serializable {
     private double amount;
     private String betOn;
-    private Game game;
+    private int gameID;
+    private double amountGained;
 
-    public Bet(double amount, String team, Game game){
+    public Bet(double amount, String team, int gameID){
         this.amount = amount;
         this.betOn = team;
-        this.game = game;
+        this.gameID = gameID;
+        this.amountGained = 0;
     }
 
     public double getAmount() { return this.amount; }
     public void setAmount(double amount) { this.amount = amount; }
 
+    public int getGameID() { return gameID; }
+    public void setGameID(int gameID) { this.gameID = gameID; }
+
     public String getBetOn() { return this.betOn; }
     public void setBetOn(String betOn) { this.betOn = betOn; }
 
-    public Game getGame() { return this.game; }
-    public void setGame(Game game) { this.game = game; }
-
+    public double getAmountGained() { return amountGained; }
+    public void setAmountGained(double amountGained) { this.amountGained = amountGained; }
 }
