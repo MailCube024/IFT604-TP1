@@ -1,7 +1,6 @@
 package HockeyLive.Common.Models;
 
 import java.io.Serializable;
-import java.util.Random;
 
 /**
  * Michaël Beaulieu         13048132

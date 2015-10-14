@@ -17,21 +17,26 @@ public class HandlerThread implements Runnable {
 
     @Override
     public void run() {
-        Object replyData = null;
+        Object replyData;
 
         switch (clientMessage.getType()) {
             case GetMatches:
                 replyData = server.GetMatches();
+                server.SendReply(clientMessage, replyData);
                 break;
             case GetMatchInfo:
                 replyData = server.GetMatchInfo(clientMessage.getData());
+                server.SendReply(clientMessage, replyData);
                 break;
             case PlaceBet:
+                server.PlaceBet(clientMessage.getData(), clientMessage);
+                break;
+            case AckNotification:
+                server.AddAck(clientMessage);
                 break;
             default:
                 break;
         }
 
-        server.SendReply(clientMessage, replyData);
     }
 }
