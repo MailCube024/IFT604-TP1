@@ -9,5 +9,6 @@ import java.time.Duration;
 public class Penalty implements Serializable {
     public String PenaltyHolder;
     public Duration TimeLeft;
-    public Penalty(){}
+    public Penalty(){
+    }
 }
