@@ -13,12 +13,12 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by Michaël on 10/12/2015.
  */
-public class UDPServerSocket {
+public class ServerSocket {
     private DatagramSocket epSocket;
     private Thread tReceive;
-    private BlockingQueue<Request> requestBuffer = new ArrayBlockingQueue<Request>(50);
+    private BlockingQueue<Request> requestBuffer = new ArrayBlockingQueue<>(50);
 
-    public UDPServerSocket(int port) throws IOException {
+    public ServerSocket(int port) throws IOException {
         epSocket = new DatagramSocket(port);
         tReceive = new Thread(() -> {
             Receive();
@@ -38,6 +38,7 @@ public class UDPServerSocket {
                 e.printStackTrace();
                 CloseSocket();
             }
+            if(tReceive.isInterrupted()) break;
         }
     }
 
@@ -57,13 +58,14 @@ public class UDPServerSocket {
         return requestBuffer.take();
     }
 
-    private void CloseSocket() {
+    public void CloseSocket() {
         if (epSocket.isConnected())
             epSocket.close();
     }
 
     @Override
     protected void finalize() throws Throwable {
+        System.out.println("Finalizing Server Socket");
         tReceive.interrupt();
         super.finalize();
     }

@@ -24,4 +24,6 @@ public class Bet implements Serializable {
     public void setBetOn(String betOn) {
         this.betOn = betOn;
     }
+
+    public Bet(){}
 }
