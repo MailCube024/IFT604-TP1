@@ -9,7 +9,9 @@ import javax.swing.event.ListSelectionListener;
 import java.util.ArrayList;
 
 /**
- * Created by Bruno-Pier on 2015-10-12.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class ClientForm {
     private JPanel MainPanel;
@@ -25,10 +27,6 @@ public class ClientForm {
     private JPanel ScoreTeam2Panel;
     private JTextField txtHostGoals;
     private JTextField txtVisitorGoals;
-    private JTextArea txtVisitorScorer;
-    private JTextArea txtHostScorer;
-    private JTextArea txtHostPenalties;
-    private JTextArea txtVisitorPenalties;
     private JPanel BetPanel;
     private JRadioButton HostRadioButton;
     private JRadioButton VisitorRadioButton;
@@ -37,6 +35,10 @@ public class ClientForm {
     private JPanel PenaltiesHostPanel;
     private JTextField txtBetAmount;
     private JButton cmdRefresh;
+    private JList HostPenaltiesList;
+    private JList VisitorPenaltiesList;
+    private JList HostScorerList;
+    private JList VisitorScorerList;
 
     public ClientForm() {
         /**For test purpose creating a List with stuff in it.**/
@@ -44,11 +46,11 @@ public class ClientForm {
         ArrayList<GameInfo> testListGameInfo = new ArrayList<GameInfo>();
 
         testListGame.add(new Game(1, "Montreal", "Ottawa"));
-        testListGameInfo.add(new GameInfo(1));
+        testListGameInfo.add(new GameInfo(1, 10));
         testListGame.add(new Game(2, "Vancouver", "Calgary"));
-        testListGameInfo.add(new GameInfo(2));
+        testListGameInfo.add(new GameInfo(2, 10));
         testListGame.add(new Game(3, "San-Jose", "St-Louis"));
-        testListGameInfo.add(new GameInfo(3));
+        testListGameInfo.add(new GameInfo(3, 10));
         MatchList.setListData(testListGame.toArray());
 
         /****************************************************************************/
@@ -56,7 +58,33 @@ public class ClientForm {
         MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
+                if (MatchList.getSelectedIndex() != -1){
+                    Game selectedGame = (Game) MatchList.getSelectedValue();
+                    txtHostName.setText(selectedGame.getHost());
+                    txtVisitorName.setText(selectedGame.getVisitor());
 
+                    //Normally we will make a request with the GameID here.
+                    //Create a thread for the request.
+                    //And receive de GameInfo.
+                    /**Test GameInfo get here.**/
+                    GameInfo selectedGameInfo;
+
+                    for (GameInfo gi : testListGameInfo) {
+                        if (gi.getGameID() == selectedGame.getGameID()) {
+                            selectedGameInfo = gi;
+                            txtPeriod.setText(String.valueOf(selectedGameInfo.getPeriod()));
+                            txtTimer.setText(String.valueOf(selectedGameInfo.getPeriodChronometer().minusSeconds(30).toMinutes()));
+                            txtHostGoals.setText(String.valueOf(selectedGameInfo.getHostGoalsTotal()));
+                            txtVisitorGoals.setText(String.valueOf(selectedGameInfo.getVisitorGoalsTotal()));
+                            HostScorerList.setListData(selectedGameInfo.getHostGoals().toArray());
+                            VisitorScorerList.setListData(selectedGameInfo.getVisitorGoals().toArray());
+                            HostPenaltiesList.setListData(selectedGameInfo.getHostPenalties().toArray());
+                            VisitorPenaltiesList.setListData(selectedGameInfo.getVisitorPenalties().toArray());
+                            break;
+                        }
+                    }
+                    /**********************************************/
+                }
             }
         });
     }
@@ -76,29 +104,5 @@ public class ClientForm {
 
     private void createUIComponents() {
         MainPanel = new JPanel();
-        MatchList = new JList();
-        MatchInfoPanel = new JPanel();
-        txtHostName = new JTextField();
-        txtVisitorName = new JTextField();
-        PeriodPanel = new JPanel();
-        txtPeriod = new JTextField();
-        TimerPanel = new JPanel();
-        txtTimer = new JTextField();
-        ScoreTeam1Panel = new JPanel();
-        ScoreTeam2Panel = new JPanel();
-        txtHostGoals = new JTextField();
-        txtVisitorGoals = new JTextField();
-        txtVisitorScorer = new JTextArea();
-        txtHostScorer = new JTextArea();
-        txtHostPenalties = new JTextArea();
-        txtVisitorPenalties = new JTextArea();
-        BetPanel = new JPanel();
-        HostRadioButton = new JRadioButton();
-        VisitorRadioButton = new JRadioButton();
-        cmdPlaceBet = new JButton();
-        PenaltiesVisitorPanel = new JPanel();
-        PenaltiesHostPanel = new JPanel();
-        txtBetAmount = new JTextField();
-        cmdRefresh = new JButton();
     }
 }
