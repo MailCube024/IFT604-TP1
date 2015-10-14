@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class Bet implements Serializable {
     private double amount;
     private String betOn;
+    private Game game;
 
     public double getAmount() {
         return amount;
@@ -24,6 +25,10 @@ public class Bet implements Serializable {
     public void setBetOn(String betOn) {
         this.betOn = betOn;
     }
+
+    public Game getGame() { return game; }
+
+    public void setGame(Game game) { this.game = game; }
 
     public Bet(){}
 }
