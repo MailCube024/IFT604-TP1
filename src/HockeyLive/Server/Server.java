@@ -6,9 +6,11 @@ import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.Bet;
 import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.Models.GameInfo;
+import HockeyLive.Common.Models.Penalty;
 import HockeyLive.Server.Communication.ServerSocket;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +24,7 @@ import java.util.concurrent.Executors;
 public class Server {
     private List<Game> runningGames;
     private ConcurrentMap<Game,GameInfo> runningGameInfos;
-    private ConcurrentMap<Game,List<Bet>> placedBets;
+    private ConcurrentMap<Integer,List<Bet>> placedBets;
     private ServerSocket socket;
 
     public Server() {
@@ -35,6 +37,8 @@ public class Server {
         try {
             socket = new ServerSocket(Constants.SERVER_COMM_PORT);
             Executor threadPool = Executors.newFixedThreadPool(50);
+
+            //threadPool.execute(cmdHandler);
 
             while (true)
             {
@@ -72,8 +76,13 @@ public class Server {
         if (runningGames.size() < 10) {
             runningGames.add(game);
             runningGameInfos.put(game, info);
-            placedBets.put(game, new ArrayList<>());
+            placedBets.put(game.GameID, new ArrayList<>());
         }
+    }
+
+    public synchronized void AddPenalty(Game game, Penalty penalty) {
+        GameInfo info = runningGameInfos.get(game);
+        info.Penalties.add(penalty);
     }
 
     public synchronized List<Game> GetMatches() {
@@ -94,7 +103,7 @@ public class Server {
     }
 
     public synchronized boolean PlaceBet(Bet bet) {
-        (placedBets.get(bet.getGame())).add(bet);
+        (placedBets.get(bet.getGameID())).add(bet);
         return true;
     }
 
@@ -109,5 +118,26 @@ public class Server {
 
     public void SendResults(Game game) {
 
+    }
+
+    public synchronized void LeapTime(Duration duration) {
+        for (int i = 0; i < runningGames.size(); ++i) {
+            Game game = runningGames.get(i);
+            GameInfo info = runningGameInfos.get(game);
+
+            if(info.Period <= 3) {
+                info.PeriodChronometer = info.PeriodChronometer.plus(duration);
+
+                if(info.PeriodChronometer.compareTo(Duration.ofMinutes(20)) >= 0)
+                {
+                    ++info.Period;
+                    info.PeriodChronometer = Duration.ofMinutes(0);
+                }
+
+                if(info.Period > 3) {
+                    SendResults(game);
+                }
+            }
+        }
     }
 }

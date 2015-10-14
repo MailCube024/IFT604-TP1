@@ -8,7 +8,7 @@ import java.io.Serializable;
 public class Bet implements Serializable {
     private double amount;
     private String betOn;
-    private Game game;
+    private int gameID;
 
     public double getAmount() {
         return amount;
@@ -26,9 +26,9 @@ public class Bet implements Serializable {
         this.betOn = betOn;
     }
 
-    public Game getGame() { return game; }
+    public int getGameID() { return gameID; }
 
-    public void setGame(Game game) { this.game = game; }
+    public void setGameID(int gameID) { this.gameID = gameID; }
 
     public Bet(){}
 }
