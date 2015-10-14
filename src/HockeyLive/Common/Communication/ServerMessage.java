@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
- * Created by Michaël on 10/14/2015.
+ * Created by Michaël on 10/12/2015.
  */
-public class Notification implements Serializable {
+public class ServerMessage implements Serializable {
+
     private InetAddress senderIp;
     private int senderPort;
     private InetAddress receiverIp;
@@ -14,9 +15,9 @@ public class Notification implements Serializable {
     private int requestID;
     private Object data;
 
-    public Notification(InetAddress senderIp, int senderPort, InetAddress receiverIp, int receiverPort, int requestID, Object data) {
-        this.senderIp = senderIp;
-        this.senderPort = senderPort;
+    public ServerMessage(InetAddress ip, int port, InetAddress receiverIp, int receiverPort, int requestID, Object data){
+        senderIp = ip;
+        senderPort = port;
         this.receiverIp = receiverIp;
         this.receiverPort = receiverPort;
         this.requestID = requestID;
@@ -39,11 +40,14 @@ public class Notification implements Serializable {
         return receiverPort;
     }
 
+    public Object getData() {
+        return data;
+    }
+
     public int getRequestID() {
         return requestID;
     }
 
-    public Object getData() {
-        return data;
-    }
+
+
 }

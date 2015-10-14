@@ -1,7 +1,7 @@
 package HockeyLive.Server.Communication;
 
-import HockeyLive.Common.Communication.Reply;
-import HockeyLive.Common.Communication.Request;
+import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.helpers.SerializationHelper;
 
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.util.concurrent.BlockingQueue;
 public class ServerSocket {
     private DatagramSocket epSocket;
     private Thread tReceive;
-    private BlockingQueue<Request> requestBuffer = new ArrayBlockingQueue<>(50);
+    private BlockingQueue<ClientMessage> clientMessageBuffer = new ArrayBlockingQueue<>(50);
 
     public ServerSocket(int port) throws IOException {
         epSocket = new DatagramSocket(port);
@@ -33,8 +33,8 @@ public class ServerSocket {
             try {
                 if (tReceive.isInterrupted()) break;
                 epSocket.receive(packet);
-                Request req = (Request) SerializationHelper.deserialize(packet.getData());
-                requestBuffer.put(req);
+                ClientMessage req = (ClientMessage) SerializationHelper.deserialize(packet.getData());
+                clientMessageBuffer.put(req);
             } catch (Exception e) {
                 CloseSocket();
                 break;
@@ -42,18 +42,18 @@ public class ServerSocket {
         }
     }
 
-    public void SendReply(Reply reply) {
+    public void Send(ServerMessage serverMessage) {
         try {
-            byte[] data = SerializationHelper.serialize(reply);
-            DatagramPacket packet = new DatagramPacket(data, data.length, reply.getReceiverIp(), reply.getReceiverPort());
+            byte[] data = SerializationHelper.serialize(serverMessage);
+            DatagramPacket packet = new DatagramPacket(data, data.length, serverMessage.getReceiverIp(), serverMessage.getReceiverPort());
             epSocket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Request GetRequest() throws InterruptedException {
-        return requestBuffer.take();
+    public ClientMessage GetMessage() throws InterruptedException {
+        return clientMessageBuffer.take();
     }
 
     public void CloseSocket() {

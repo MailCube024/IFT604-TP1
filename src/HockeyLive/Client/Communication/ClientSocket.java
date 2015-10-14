@@ -1,15 +1,12 @@
 package HockeyLive.Client.Communication;
 
-import HockeyLive.Common.Communication.Reply;
-import HockeyLive.Common.Communication.Request;
+import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.helpers.SerializationHelper;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.SocketTimeoutException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
@@ -19,7 +16,7 @@ import java.util.concurrent.BlockingQueue;
 public class ClientSocket {
     private DatagramSocket epSocket;
     private Thread tReceive;
-    private BlockingQueue<Reply> replyBuffer = new ArrayBlockingQueue<>(50);
+    private BlockingQueue<ServerMessage> serverMessageBuffer = new ArrayBlockingQueue<>(50);
 
     public ClientSocket(int port) throws IOException {
         epSocket = new DatagramSocket(port);
@@ -36,8 +33,8 @@ public class ClientSocket {
             try {
                 if (tReceive.isInterrupted()) break;
                 epSocket.receive(packet);
-                Reply reply = (Reply) SerializationHelper.deserialize(packet.getData());
-                replyBuffer.put(reply);
+                ServerMessage serverMessage = (ServerMessage) SerializationHelper.deserialize(packet.getData());
+                serverMessageBuffer.put(serverMessage);
             } catch (Exception e) {
                 CloseSocket();
                 break;
@@ -45,18 +42,18 @@ public class ClientSocket {
         }
     }
 
-    public void SendRequest(Request request) {
+    public void Send(ClientMessage clientMessage) {
         try {
-            byte[] data = SerializationHelper.serialize(request);
-            DatagramPacket packet = new DatagramPacket(data, data.length, request.GetIPAddress(), request.GetPort());
+            byte[] data = SerializationHelper.serialize(clientMessage);
+            DatagramPacket packet = new DatagramPacket(data, data.length, clientMessage.GetIPAddress(), clientMessage.GetPort());
             epSocket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public Reply GetReply() throws InterruptedException {
-        return replyBuffer.take();
+    public ServerMessage GetMessage() throws InterruptedException {
+        return serverMessageBuffer.take();
     }
 
     public void CloseSocket() {

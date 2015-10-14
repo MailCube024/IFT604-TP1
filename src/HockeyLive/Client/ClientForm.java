@@ -39,8 +39,6 @@ public class ClientForm {
     private JButton cmdRefresh;
 
     public ClientForm() {
-        createUIComponents();
-
         /**For test purpose creating a List with stuff in it.**/
         ArrayList<Game> testListGame = new ArrayList<Game>();
         ArrayList<GameInfo> testListGameInfo = new ArrayList<GameInfo>();
@@ -51,7 +49,8 @@ public class ClientForm {
         testListGameInfo.add(new GameInfo(2));
         testListGame.add(new Game(3, "San-Jose", "St-Louis"));
         testListGameInfo.add(new GameInfo(3));
-        MatchList = new JList(testListGame.toArray());
+        MatchList.setListData(testListGame.toArray());
+
         /****************************************************************************/
 
         MatchList.addListSelectionListener(new ListSelectionListener() {
@@ -68,6 +67,7 @@ public class ClientForm {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
+
 
         //Envoie d'une request au serveur pour la liste des matches du jour.
         //Au retour, binder la liste des matches.

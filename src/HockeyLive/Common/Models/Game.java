@@ -41,7 +41,7 @@ public class Game implements Serializable{
     public void incVisitorGoals() { this.VisitorGoals++; }
     public void decVisitorGoals() { this.VisitorGoals--; }
 
-    public String GetGameDescription(){
+    public String toString(){
         return String.format("%s vs. %s / %d-%d",Host,Visitor,HostGoals,VisitorGoals);
     }
 }
