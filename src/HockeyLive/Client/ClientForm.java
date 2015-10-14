@@ -1,6 +1,7 @@
 package HockeyLive.Client;
 
-import HockeyLive.Server.Models.Game;
+import HockeyLive.Common.Models.Game;
+import HockeyLive.Common.Models.GameInfo;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -39,21 +40,26 @@ public class ClientForm {
 
     public ClientForm() {
         createUIComponents();
-        //For test purpose creating a List with stuff in it.
-        //ArrayList<Game> arl = new ArrayList<Game>();
-        /*Game game1 = new Game();
 
-        arl.add();
-        arl.add(new Game());
-        arl.add(new Game());
-        Object obj = arl.clone();
-        JList list = new JList(obj);*/
-        /*MatchList.addListSelectionListener(new ListSelectionListener() {
+        /**For test purpose creating a List with stuff in it.**/
+        ArrayList<Game> testListGame = new ArrayList<Game>();
+        ArrayList<GameInfo> testListGameInfo = new ArrayList<GameInfo>();
+
+        testListGame.add(new Game(1, "Montreal", "Ottawa"));
+        testListGameInfo.add(new GameInfo(1));
+        testListGame.add(new Game(2, "Vancouver", "Calgary"));
+        testListGameInfo.add(new GameInfo(2));
+        testListGame.add(new Game(3, "San-Jose", "St-Louis"));
+        testListGameInfo.add(new GameInfo(3));
+        MatchList = new JList(testListGame.toArray());
+        /****************************************************************************/
+
+        MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
 
             }
-        });*/
+        });
     }
 
     public static void main(String[] args) {
@@ -63,7 +69,7 @@ public class ClientForm {
         frame.pack();
         frame.setVisible(true);
 
-        //Envoie d'une request au serveur pour la liste des matches.
+        //Envoie d'une request au serveur pour la liste des matches du jour.
         //Au retour, binder la liste des matches.
 
     }
