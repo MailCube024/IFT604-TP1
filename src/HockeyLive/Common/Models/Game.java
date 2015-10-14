@@ -15,4 +15,6 @@ public class Game implements Serializable{
     public String GetGameDescription(){
         return String.format("%s vs. %s / %d-%d",Host,Visitor,HostGoals,VisitorGoals);
     }
+
+    public Game(){}
 }

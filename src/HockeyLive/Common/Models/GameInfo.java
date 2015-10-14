@@ -12,4 +12,6 @@ public class GameInfo implements Serializable {
     public Duration PeriodChronometer;
     public int Period;
     public List<Penalty> Penalties;
+
+    public GameInfo(){}
 }
