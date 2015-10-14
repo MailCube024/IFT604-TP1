@@ -78,13 +78,18 @@ public class Server {
         if (runningGames.size() < 10) {
             runningGames.add(game);
             runningGameInfos.put(game, info);
-            placedBets.put(game.GameID, new ArrayList<>());
+            placedBets.put(game.getGameID(), new ArrayList<>());
         }
     }
 
-    public synchronized void AddPenalty(Game game, Penalty penalty) {
+    public synchronized void AddPenalty(Game game, String team, Penalty penalty) {
         GameInfo info = runningGameInfos.get(game);
-        info.Penalties.add(penalty);
+
+        if(team.equals(game.getHost())) {
+            info.getHostPenalties().add(penalty);
+        } else {
+            info.getVisitorPenalties().add(penalty);
+        }
     }
 
     public synchronized List<Game> GetMatches() {
@@ -125,7 +130,7 @@ public class Server {
     }
 
     public void SendResults(Game game) {
-        List<BetInfo> bets = placedBets.get(game.GameID);
+        List<BetInfo> bets = placedBets.get(game.getGameID());
 
         double totalAmountHost = 0;
         double totalAmountVisitor = 0;
@@ -133,50 +138,49 @@ public class Server {
         for (int i = 0; i < bets.size(); i++) {
             Bet bet = bets.get(i).getBet();
 
-            if(bet.getBetOn().equals(game.Host)) {
+            if(bet.getBetOn().equals(game.getHost())) {
                 totalAmountHost += bet.getAmount();
             } else {
                 totalAmountVisitor += bet.getAmount();
             }
         }
 
-        if(game.HostGoals > game.VisitorGoals) {
+        if(game.getHostGoals() > game.getVisitorGoals()) {
             for (int i = 0; i < bets.size(); i++) {
                 BetInfo info = bets.get(i);
-                if(info.getBet().getBetOn().equals(game.Host)) {
+                if(info.getBet().getBetOn().equals(game.getHost())) {
                     double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
                             * (info.getBet().getAmount() / totalAmountHost);
-                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
                             info.getBetterIp(), info.getBetterPort(),
-                            1, winAmount);
+                            1, winAmount));
                 } else {
-                    socket.
-                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
                             info.getBetterIp(), info.getBetterPort(),
-                            1, 0 - info.getBet().getAmount());
+                            1, 0 - info.getBet().getAmount()));
                 }
             }
-        } else if(game.HostGoals < game.VisitorGoals) {
+        } else if(game.getHostGoals() < game.getVisitorGoals()) {
             for (int i = 0; i < bets.size(); i++) {
                 BetInfo info = bets.get(i);
-                if(info.getBet().getBetOn().equals(game.Visitor)) {
+                if(info.getBet().getBetOn().equals(game.getVisitor())) {
                     double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
                             * (info.getBet().getAmount() / totalAmountVisitor);
-                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
                             info.getBetterIp(), info.getBetterPort(),
-                            1, winAmount);
+                            1, winAmount));
                 } else {
-                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
                             info.getBetterIp(), info.getBetterPort(),
-                            1, 0 - info.getBet().getAmount());
+                            1, 0 - info.getBet().getAmount()));
                 }
             }
         } else {
             for (int i = 0; i < bets.size(); i++) {
                 BetInfo info = bets.get(i);
-                new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
                         info.getBetterIp(), info.getBetterPort(),
-                        1, 0);
+                        1, 0));
             }
         }
     }
@@ -186,16 +190,16 @@ public class Server {
             Game game = runningGames.get(i);
             GameInfo info = runningGameInfos.get(game);
 
-            if(info.Period <= 3) {
-                info.PeriodChronometer = info.PeriodChronometer.plus(duration);
+            if(info.getPeriod() <= 3) {
+                info.setPeriodChronometer(info.getPeriodChronometer().plus(duration));
 
-                if(info.PeriodChronometer.compareTo(Duration.ofMinutes(20)) >= 0)
+                if(info.getPeriodChronometer().compareTo(Duration.ofMinutes(20)) >= 0)
                 {
-                    ++info.Period;
-                    info.PeriodChronometer = Duration.ofMinutes(0);
+                    info.setPeriod(1 + info.getPeriod());
+                    info.setPeriodChronometer(Duration.ofMinutes(0));
                 }
 
-                if(info.Period > 3) {
+                if(info.getPeriod() > 3) {
                     SendResults(game);
                 }
             }

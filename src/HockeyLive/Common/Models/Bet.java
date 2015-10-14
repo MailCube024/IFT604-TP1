@@ -3,32 +3,27 @@ package HockeyLive.Common.Models;
 import java.io.Serializable;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class Bet implements Serializable {
     private double amount;
     private String betOn;
     private int gameID;
 
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
+    public Bet(double amount, String team, int gameID){
         this.amount = amount;
+        this.betOn = team;
+        this.gameID = gameID;
     }
 
-    public String getBetOn() {
-        return betOn;
-    }
-
-    public void setBetOn(String betOn) {
-        this.betOn = betOn;
-    }
+    public double getAmount() { return this.amount; }
+    public void setAmount(double amount) { this.amount = amount; }
 
     public int getGameID() { return gameID; }
-
     public void setGameID(int gameID) { this.gameID = gameID; }
 
-    public Bet(){}
+    public String getBetOn() { return this.betOn; }
+    public void setBetOn(String betOn) { this.betOn = betOn; }
 }
