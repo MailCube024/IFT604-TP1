@@ -1,8 +1,7 @@
 package HockeyLive.Server;
 
-import HockeyLive.Common.Communication.Notification;
-import HockeyLive.Common.Communication.Reply;
-import HockeyLive.Common.Communication.Request;
+import HockeyLive.Common.Communication.ServerMessage;
+import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.Bet;
 import HockeyLive.Common.Models.Game;
@@ -48,9 +47,9 @@ public class Server {
                 socket.Receive();
 
                 try {
-                    Request request = socket.GetRequest();
+                    ClientMessage clientMessage = socket.GetMessage();
 
-                    Runnable handler = new HandlerThread(this, request);
+                    Runnable handler = new HandlerThread(this, clientMessage);
                     threadPool.execute(handler);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
@@ -66,12 +65,12 @@ public class Server {
         server.execute();
     }
 
-    public void SendReply(Request request, Object data) {
-        Reply reply = new Reply(request.GetIPAddress(),
-                request.GetPort(),
-                request.getReceiverIp(),
-                request.getReceiverPort(),
-                request.getID(),
+    public void SendReply(ClientMessage clientMessage, Object data) {
+        ServerMessage serverMessage = new ServerMessage(clientMessage.GetIPAddress(),
+                clientMessage.GetPort(),
+                clientMessage.getReceiverIp(),
+                clientMessage.getReceiverPort(),
+                clientMessage.getID(),
                 data);
     }
 
