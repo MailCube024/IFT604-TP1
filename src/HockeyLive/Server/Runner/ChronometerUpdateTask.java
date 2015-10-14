@@ -19,9 +19,12 @@ public class ChronometerUpdateTask extends TimerTask {
 
     @Override
     public void run() {
+        server.LockForUpdate();
         for (Game g : server.GetNonCompletedGames()) {
             GameInfo info = server.GetMatchInfo(g);
             info.decPeriodChronometer(Duration.ofSeconds(30));
+
+            //Check penalties durations
 
             //Verify if we have completed a period
             Duration currentChronometer = info.getPeriodChronometer();
@@ -31,5 +34,6 @@ public class ChronometerUpdateTask extends TimerTask {
                 else info.incPeriod();
             }
         }
+        server.UnlockUpdates();
     }
 }

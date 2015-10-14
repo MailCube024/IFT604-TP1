@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
@@ -22,15 +24,18 @@ import java.util.stream.Collectors;
  */
 public class Server implements Runnable {
     private List<Game> runningGames;
-    private ConcurrentMap<Game,GameInfo> runningGameInfos;
-    private ConcurrentMap<Game,List<Bet>> placedBets;
+    private ConcurrentMap<Game, GameInfo> runningGameInfos;
+    private ConcurrentMap<Game, List<Bet>> placedBets;
     private ServerSocket socket;
     private Thread serverThread;
+
+    private Lock gameUpdateLock;
 
     public Server() {
         runningGames = new ArrayList<>();
         runningGameInfos = new ConcurrentHashMap<>();
         placedBets = new ConcurrentHashMap<>();
+        gameUpdateLock = new ReentrantLock();
     }
 
     public static void main(String[] args) {
@@ -43,8 +48,7 @@ public class Server implements Runnable {
             socket = new ServerSocket(Constants.SERVER_COMM_PORT);
             Executor threadPool = Executors.newFixedThreadPool(50);
 
-            while (true)
-            {
+            while (true) {
                 socket.Receive();
 
                 try {
@@ -92,10 +96,10 @@ public class Server implements Runnable {
 
     public synchronized GameInfo GetMatchInfo(Object match) {
         try {
-            Game m = (Game)match;
+            Game m = (Game) match;
             return GetMatchInfo(m);
         } catch (Exception e) {
-            return  null;
+            return null;
         }
     }
 
@@ -106,7 +110,7 @@ public class Server implements Runnable {
 
     public synchronized boolean PlaceBet(Object bet) {
         try {
-            Bet b = (Bet)bet;
+            Bet b = (Bet) bet;
             return PlaceBet(b);
         } catch (Exception e) {
             return false;
@@ -122,8 +126,21 @@ public class Server implements Runnable {
         execute();
     }
 
-    public void start(){
+    public void start() {
         serverThread = new Thread(this);
         serverThread.start();
+    }
+
+    public void stop() {
+        serverThread.interrupt();
+        socket.CloseSocket();
+    }
+
+    public void LockForUpdate() {
+        gameUpdateLock.lock();
+    }
+
+    public void UnlockUpdates() {
+        gameUpdateLock.unlock();
     }
 }

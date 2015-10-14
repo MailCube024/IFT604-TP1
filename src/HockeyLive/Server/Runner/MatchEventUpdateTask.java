@@ -21,11 +21,13 @@ public class MatchEventUpdateTask extends TimerTask {
 
     @Override
     public void run() {
+        server.LockForUpdate();
         for (Game g : server.GetNonCompletedGames()) {
 
             GameInfo info = server.GetMatchInfo(g);
-
+            
 
         }
+        server.UnlockUpdates();
     }
 }
