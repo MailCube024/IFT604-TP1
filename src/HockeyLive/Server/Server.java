@@ -27,18 +27,20 @@ public class Server {
     private List<Game> runningGames;
     private ConcurrentMap<Game,GameInfo> runningGameInfos;
     private ConcurrentMap<Integer,List<Bet>> placedBets;
+    private ConcurrentMap<Integer,ConcurrentMap<InetAddress,ConcurrentMap<Integer,ClientMessage>>> acks;
     private ServerSocket socket;
 
     public Server() {
         runningGames = new ArrayList<>();
         runningGameInfos = new ConcurrentHashMap<>();
         placedBets = new ConcurrentHashMap<>();
+        acks = new ConcurrentHashMap<>();
     }
 
     public void execute() {
         try {
             socket = new ServerSocket(Constants.SERVER_COMM_PORT);
-            Executor threadPool = Executors.newFixedThreadPool(50);
+            Executor threadPool = Executors.newCachedThreadPool();
 
             //threadPool.execute(cmdHandler);
 
@@ -79,6 +81,7 @@ public class Server {
             runningGames.add(game);
             runningGameInfos.put(game, info);
             placedBets.put(game.getGameID(), new ArrayList<>());
+            acks.put(game.getGameID(), new ConcurrentHashMap<>());
         }
     }
 
@@ -109,25 +112,38 @@ public class Server {
         }
     }
 
-    public synchronized Object PlaceBet(Bet bet, ClientMessage message) {
+    public void AddAck(ClientMessage message) {
+        Bet bet = (Bet)message.getData();
+
+        ConcurrentMap<InetAddress,ConcurrentMap<Integer,ClientMessage>> gameAcks = acks.get(message.getID());
+        gameAcks.putIfAbsent(message.GetIPAddress(), new ConcurrentHashMap<Integer,ClientMessage>());
+        ConcurrentMap<Integer,ClientMessage> addressAcks = gameAcks.get(message.GetIPAddress());
+        addressAcks.put(message.GetPort(), message);
+
+        acks.notifyAll();
+    }
+
+    public synchronized void PlaceBet(Bet bet, ClientMessage message) {
         Game game = runningGames.get(bet.getGameID());
         GameInfo info = runningGameInfos.get(game);
 
-        if(info.getPeriod() > 2)
-            return false;
-
-        (placedBets.get(bet.getGameID())).add(bet);
+        boolean added = false;
 
         InetAddress localhost;
         try {
             localhost = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
             e.printStackTrace();
-            return false;
+            return;
+        }
+
+        if(info.getPeriod() <= 2) {
+            added = true;
+            (placedBets.get(bet.getGameID())).add(bet);
         }
 
         socket.Send(new ServerMessage(localhost, Constants.SERVER_COMM_PORT,
-                message.GetIPAddress(), message.GetPort(), message.getID(), true));
+                message.GetIPAddress(), message.GetPort(), message.getID(), added));
 
         while(info.getPeriod() <= 3) {
             try {
@@ -137,6 +153,37 @@ public class Server {
             }
         }
 
+        bet.setAmountGained(computeAmountGained(bet, game));
+
+        ServerMessage serverMessage = new ServerMessage(message.GetIPAddress(),
+                message.GetPort(),
+                message.getReceiverIp(),
+                message.getReceiverPort(),
+                message.getID(),
+                bet);
+
+        while (! (acks.containsKey(game.getGameID())
+                && acks.get(game.getGameID()).containsKey(message.GetIPAddress())
+                && acks.get(game.getGameID()).get(message.GetIPAddress()).containsKey(message.GetPort()))) {
+            socket.Send(serverMessage);
+            try {
+                acks.wait(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public synchronized void PlaceBet(Object bet, ClientMessage message) {
+        try {
+            Bet b = (Bet) bet;
+            PlaceBet(b, message);
+        } catch (Exception e) {
+            SendReply(message, false);
+        }
+    }
+    
+    private double computeAmountGained(Bet bet, Game game) {
         List<Bet> bets = placedBets.get(game.getGameID());
 
         double totalAmountHost = 0;
@@ -152,35 +199,25 @@ public class Server {
             }
         }
 
-        double winAmount = 0;
+        double amountGained = 0;
 
         if(game.getHostGoals() > game.getVisitorGoals()) {
             if(bet.getBetOn().equals(game.getHost())) {
-                winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
+                amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountHost);
             } else {
-                winAmount = 0 - bet.getAmount();
+                amountGained = 0 - bet.getAmount();
             }
         } else if(game.getHostGoals() < game.getVisitorGoals()) {
             if(bet.getBetOn().equals(game.getHost())) {
-                winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
+                amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountVisitor);
             } else {
-                winAmount = 0 - bet.getAmount();
+                amountGained = 0 - bet.getAmount();
             }
         }
-
-        return winAmount;
-    }
-
-    public synchronized Object PlaceBet(Object bet, ClientMessage message) {
-        try {
-            Bet b = (Bet)bet;
-
-            return PlaceBet(b, message);
-        } catch (Exception e) {
-            return false;
-        }
+        
+        return amountGained;
     }
 
     public synchronized void LeapTime(Duration duration) {
