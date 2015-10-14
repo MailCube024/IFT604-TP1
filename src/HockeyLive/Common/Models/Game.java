@@ -11,15 +11,11 @@ public class Game implements Serializable {
     private int GameID;
     private String Host;
     private String Visitor;
-    private int HostGoals;
-    private int VisitorGoals;
 
     public Game(int id, String host, String visitor) {
         this.GameID = id;
         this.Host = host;
         this.Visitor = visitor;
-        this.HostGoals = 0;
-        this.VisitorGoals = 0;
     }
 
     public int getGameID() {
@@ -42,39 +38,7 @@ public class Game implements Serializable {
         Visitor = visitor;
     }
 
-    public int getHostGoals() {
-        return HostGoals;
-    }
-
-    public void setHostGoals(int hostGoals) {
-        HostGoals = hostGoals;
-    }
-
-    public void incHostGoals() {
-        HostGoals++;
-    }
-
-    public void decHostGoals() {
-        HostGoals--;
-    }
-
-    public int getVisitorGoals() {
-        return VisitorGoals;
-    }
-
-    public void setVisitorGoals(int visitorGoals) {
-        VisitorGoals = visitorGoals;
-    }
-
-    public void incVisitorGoals() {
-        VisitorGoals++;
-    }
-
-    public void decVisitorGoals() {
-        VisitorGoals--;
-    }
-
-    public String GetGameDescription() {
-        return String.format("%s vs. %s / %d-%d", Host, Visitor, HostGoals, VisitorGoals);
+    public String toString(){
+        return String.format("%s vs. %s",Host,Visitor);
     }
 }

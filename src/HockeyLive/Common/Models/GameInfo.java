@@ -16,6 +16,10 @@ public class GameInfo implements Serializable {
     private int Period;
     private List<Penalty> HostPenalties;
     private List<Penalty> VisitorPenalties;
+    private List<Goal> HostGoals;
+    private List<Goal> VisitorGoals;
+    private int HostGoalsTotal;
+    private int VisitorGoalsTotal;
     private int periodLength;
 
     public GameInfo(int id, int periodLength) {
@@ -23,8 +27,12 @@ public class GameInfo implements Serializable {
         this.PeriodChronometer = Duration.ofMinutes(periodLength);
         this.periodLength = periodLength;
         this.Period = 1;
-        this.HostPenalties = new ArrayList<>();
-        this.VisitorPenalties = new ArrayList<>();
+        this.HostPenalties = new ArrayList<Penalty>();
+        this.VisitorPenalties = new ArrayList<Penalty>();
+        this.HostGoals = new ArrayList<Goal>();
+        this.VisitorGoals = new ArrayList<Goal>();
+        this.HostGoalsTotal = 0;
+        this.VisitorGoalsTotal = 0;
     }
 
     public int getGameID() {
@@ -94,5 +102,81 @@ public class GameInfo implements Serializable {
 
     public boolean removeVisitorPenalties(Penalty p) {
         return VisitorPenalties.remove(p);
+    }
+
+    public List<Goal> getHostGoals() {
+        return HostGoals;
+    }
+
+    public void setHostGoals(List<Goal> hostGoals) {
+        HostGoals = hostGoals;
+    }
+
+    public boolean addHostGoals(Goal g) {
+        for(Goal goal : HostGoals){
+            if(goal.getGoalHolder().equals(g.getGoalHolder())){
+                goal.incAmount();
+                this.HostGoalsTotal++;
+                return true;
+            }
+        }
+        return HostGoals.add(g);
+    }
+
+    public boolean removeHostGoals(Goal g) {
+        for(Goal goal : HostGoals){
+            if(goal.getGoalHolder().equals(g.getGoalHolder())){
+                goal.decAmount();
+                this.HostGoalsTotal--;
+                return true;
+            }
+        }
+        return HostGoals.remove(g);
+    }
+
+    public List<Goal> getVisitorGoals() {
+        return VisitorGoals;
+    }
+
+    public void setVisitorGoals(List<Goal> visitorGoals) {
+        VisitorGoals = visitorGoals;
+    }
+
+    public boolean addVisitorGoals(Goal g) {
+        for(Goal goal : VisitorGoals){
+            if(goal.getGoalHolder().equals(g.getGoalHolder())){
+                goal.incAmount();
+                this.VisitorGoalsTotal++;
+                return true;
+            }
+        }
+        return VisitorGoals.add(g);
+    }
+
+    public boolean removeVisitorGoals(Goal g){
+        for(Goal goal: VisitorGoals){
+            if(goal.getGoalHolder().equals(g.getGoalHolder())){
+                goal.decAmount();
+                this.VisitorGoalsTotal--;
+                return true;
+            }
+        }
+        return VisitorGoals.remove(g);
+    }
+
+    public int getHostGoalsTotal() {
+        return HostGoalsTotal;
+    }
+
+    public void setHostGoalsTotal(int hostGoalsTotal) {
+        HostGoalsTotal = hostGoalsTotal;
+    }
+
+    public int getVisitorGoalsTotal() {
+        return VisitorGoalsTotal;
+    }
+
+    public void setVisitorGoalsTotal(int visitorGoalsTotal) {
+        VisitorGoalsTotal = visitorGoalsTotal;
     }
 }
