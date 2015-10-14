@@ -1,18 +1,21 @@
 package HockeyLive.Server;
 
-import HockeyLive.Server.Models.Game;
+import HockeyLive.Common.Models.Game;
+import HockeyLive.Common.Models.GameInfo;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by Michaël on 10/12/2015.
  */
 public class Server {
-    private List<Game> m_runningGames;
+    private ConcurrentMap<Integer, Game> runningGames;
+    private ConcurrentMap<Game,GameInfo> runningGameInfos;
 
     public Server() {
-        m_runningGames = new ArrayList<>();
+        runningGames = new ConcurrentHashMap<>();
+        runningGameInfos = new ConcurrentHashMap<>();
     }
 
     public static void main(String[] args){
