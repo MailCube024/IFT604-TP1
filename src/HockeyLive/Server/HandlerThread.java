@@ -1,6 +1,6 @@
 package HockeyLive.Server;
 
-import HockeyLive.Common.Communication.Request;
+import HockeyLive.Common.Communication.ClientMessage;
 
 /**
  * Created by Benoit on 2015-10-13.
@@ -8,31 +8,31 @@ import HockeyLive.Common.Communication.Request;
 public class HandlerThread implements Runnable {
 
     private Server server;
-    private Request request;
+    private ClientMessage clientMessage;
 
-    public HandlerThread(Server server, Request request){
+    public HandlerThread(Server server, ClientMessage clientMessage){
         this.server = server;
-        this.request = request;
+        this.clientMessage = clientMessage;
     }
 
     @Override
     public void run() {
         Object replyData = null;
 
-        switch (request.getType()) {
+        switch (clientMessage.getType()) {
             case GetMatches:
                 replyData = server.GetMatches();
                 break;
             case GetMatchInfo:
-                replyData = server.GetMatchInfo(request.getRequestData());
+                replyData = server.GetMatchInfo(clientMessage.getData());
                 break;
             case PlaceBet:
-                replyData = server.PlaceBet(request.getRequestData(), request.GetIPAddress(), request.GetPort());
+                replyData = server.PlaceBet(clientMessage.getData(), clientMessage);
                 break;
             default:
                 break;
         }
 
-        server.SendReply(request, replyData);
+        server.SendReply(clientMessage, replyData);
     }
 }

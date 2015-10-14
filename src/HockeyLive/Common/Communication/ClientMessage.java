@@ -6,24 +6,24 @@ import java.net.InetAddress;
 /**
  * Created by Michaël on 10/12/2015.
  */
-public class Request implements Serializable {
-    private RequestType type;
+public class ClientMessage implements Serializable {
+    private ClientMessageType type;
 
     private InetAddress senderIp;
     private int senderPort;
     private InetAddress receiverIp;
     private int receiverPort;
     private int ID;
-    private Object requestData;
+    private Object data;
 
-    public Request(RequestType type, int id, InetAddress ip, int port, InetAddress receiverIp, int receiverPort, Object requestData){
+    public ClientMessage(ClientMessageType type, int id, InetAddress ip, int port, InetAddress receiverIp, int receiverPort, Object data){
         this.type = type;
         senderIp = ip;
         senderPort = port;
         ID = id;
         this.receiverIp = receiverIp;
         this.receiverPort = receiverPort;
-        this.requestData = requestData;
+        this.data = data;
     }
 
     public InetAddress GetIPAddress() {
@@ -34,7 +34,7 @@ public class Request implements Serializable {
         return senderPort;
     }
 
-    public RequestType getType() {
+    public ClientMessageType getType() {
         return type;
     }
 
@@ -50,7 +50,7 @@ public class Request implements Serializable {
         return ID;
     }
 
-    public Object getRequestData() {
-        return requestData;
+    public Object getData() {
+        return data;
     }
 }
