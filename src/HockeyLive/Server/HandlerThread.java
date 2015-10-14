@@ -1,33 +1,37 @@
 package HockeyLive.Server;
 
 import HockeyLive.Common.Communication.Request;
-import HockeyLive.Server.Communication.ServerSocket;
 
 /**
  * Created by Benoit on 2015-10-13.
  */
 public class HandlerThread implements Runnable {
 
-    private ServerSocket socket;
+    private Server server;
     private Request request;
 
-    public HandlerThread(ServerSocket socket, Request request){
-        this.socket = socket;
+    public HandlerThread(Server server, Request request){
+        this.server = server;
         this.request = request;
     }
 
     @Override
     public void run() {
-        //System.out.println(Thread.currentThread().getName()+' Start. Command = '+command);
-        processCommand();
-        //System.out.println(Thread.currentThread().getName()+' End.');
-    }
+        Object replyData = null;
 
-    private void processCommand() {
-        try {
-            Thread.sleep(5000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        switch (request.getType()) {
+            case GetMatches:
+                replyData = server.GetMatches();
+                break;
+            case GetMatchInfo:
+                replyData = server.GetMatchInfo(request.getRequestData());
+                break;
+            case PlaceBet:
+                break;
+            default:
+                break;
         }
+
+        server.SendReply(request, replyData);
     }
 }
