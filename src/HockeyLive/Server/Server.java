@@ -1,5 +1,6 @@
 package HockeyLive.Server;
 
+import HockeyLive.Common.Communication.Notification;
 import HockeyLive.Common.Communication.Reply;
 import HockeyLive.Common.Communication.Request;
 import HockeyLive.Common.Constants;
@@ -10,6 +11,7 @@ import HockeyLive.Common.Models.Penalty;
 import HockeyLive.Server.Communication.ServerSocket;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +26,7 @@ import java.util.concurrent.Executors;
 public class Server {
     private List<Game> runningGames;
     private ConcurrentMap<Game,GameInfo> runningGameInfos;
-    private ConcurrentMap<Integer,List<Bet>> placedBets;
+    private ConcurrentMap<Integer,List<BetInfo>> placedBets;
     private ServerSocket socket;
 
     public Server() {
@@ -102,22 +104,81 @@ public class Server {
         }
     }
 
-    public synchronized boolean PlaceBet(Bet bet) {
-        (placedBets.get(bet.getGameID())).add(bet);
+    public synchronized boolean PlaceBet(BetInfo bet) {
+        (placedBets.get(bet.getBet().getGameID())).add(bet);
         return true;
     }
 
-    public synchronized boolean PlaceBet(Object bet) {
+    public synchronized boolean PlaceBet(Object bet, InetAddress betterIp, int betterPort) {
         try {
             Bet b = (Bet)bet;
-            return PlaceBet(b);
+
+            BetInfo info = new BetInfo();
+            info.setBet(b);
+            info.setBetterIp(betterIp);
+            info.setBetterPort(betterPort);
+
+            return PlaceBet(info);
         } catch (Exception e) {
             return false;
         }
     }
 
     public void SendResults(Game game) {
+        List<BetInfo> bets = placedBets.get(game.GameID);
 
+        double totalAmountHost = 0;
+        double totalAmountVisitor = 0;
+
+        for (int i = 0; i < bets.size(); i++) {
+            Bet bet = bets.get(i).getBet();
+
+            if(bet.getBetOn().equals(game.Host)) {
+                totalAmountHost += bet.getAmount();
+            } else {
+                totalAmountVisitor += bet.getAmount();
+            }
+        }
+
+        if(game.HostGoals > game.VisitorGoals) {
+            for (int i = 0; i < bets.size(); i++) {
+                BetInfo info = bets.get(i);
+                if(info.getBet().getBetOn().equals(game.Host)) {
+                    double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
+                            * (info.getBet().getAmount() / totalAmountHost);
+                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                            info.getBetterIp(), info.getBetterPort(),
+                            1, winAmount);
+                } else {
+                    socket.
+                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                            info.getBetterIp(), info.getBetterPort(),
+                            1, 0 - info.getBet().getAmount());
+                }
+            }
+        } else if(game.HostGoals < game.VisitorGoals) {
+            for (int i = 0; i < bets.size(); i++) {
+                BetInfo info = bets.get(i);
+                if(info.getBet().getBetOn().equals(game.Visitor)) {
+                    double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
+                            * (info.getBet().getAmount() / totalAmountVisitor);
+                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                            info.getBetterIp(), info.getBetterPort(),
+                            1, winAmount);
+                } else {
+                    new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                            info.getBetterIp(), info.getBetterPort(),
+                            1, 0 - info.getBet().getAmount());
+                }
+            }
+        } else {
+            for (int i = 0; i < bets.size(); i++) {
+                BetInfo info = bets.get(i);
+                new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                        info.getBetterIp(), info.getBetterPort(),
+                        1, 0);
+            }
+        }
     }
 
     public synchronized void LeapTime(Duration duration) {

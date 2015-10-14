@@ -27,6 +27,7 @@ public class HandlerThread implements Runnable {
                 replyData = server.GetMatchInfo(request.getRequestData());
                 break;
             case PlaceBet:
+                replyData = server.PlaceBet(request.getRequestData(), request.GetIPAddress(), request.GetPort());
                 break;
             default:
                 break;
