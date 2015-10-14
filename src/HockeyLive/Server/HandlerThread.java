@@ -1,17 +1,17 @@
 package HockeyLive.Server;
 
 import HockeyLive.Common.Communication.Request;
-import HockeyLive.Server.Communication.UDPServerSocket;
+import HockeyLive.Server.Communication.ServerSocket;
 
 /**
  * Created by Benoit on 2015-10-13.
  */
 public class HandlerThread implements Runnable {
 
-    private UDPServerSocket socket;
+    private ServerSocket socket;
     private Request request;
 
-    public HandlerThread(UDPServerSocket socket, Request request){
+    public HandlerThread(ServerSocket socket, Request request){
         this.socket = socket;
         this.request = request;
     }
