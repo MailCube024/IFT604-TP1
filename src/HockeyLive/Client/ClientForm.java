@@ -1,11 +1,6 @@
 package HockeyLive.Client;
 
-import HockeyLive.Server.Models.Game;
-
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.util.ArrayList;
 
 /**
  * Created by Bruno-Pier on 2015-10-12.

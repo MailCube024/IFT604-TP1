@@ -12,6 +12,7 @@ import HockeyLive.Server.Communication.ServerSocket;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -145,43 +146,47 @@ public class Server {
             }
         }
 
-        if(game.getHostGoals() > game.getVisitorGoals()) {
-            for (int i = 0; i < bets.size(); i++) {
-                BetInfo info = bets.get(i);
-                if(info.getBet().getBetOn().equals(game.getHost())) {
-                    double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
-                            * (info.getBet().getAmount() / totalAmountHost);
-                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
-                            info.getBetterIp(), info.getBetterPort(),
-                            1, winAmount));
-                } else {
-                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
-                            info.getBetterIp(), info.getBetterPort(),
-                            1, 0 - info.getBet().getAmount()));
+        try {
+            if(game.getHostGoals() > game.getVisitorGoals()) {
+                for (int i = 0; i < bets.size(); i++) {
+                    BetInfo info = bets.get(i);
+                    if(info.getBet().getBetOn().equals(game.getHost())) {
+                        double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
+                                * (info.getBet().getAmount() / totalAmountHost);
+                        socket.SendReply(new Reply(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                                info.getBetterIp(), info.getBetterPort(),
+                                1, winAmount));
+                    } else {
+                        socket.SendReply(new Reply(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                                info.getBetterIp(), info.getBetterPort(),
+                                1, 0 - info.getBet().getAmount()));
+                    }
+                }
+            } else if(game.getHostGoals() < game.getVisitorGoals()) {
+                for (int i = 0; i < bets.size(); i++) {
+                    BetInfo info = bets.get(i);
+                    if(info.getBet().getBetOn().equals(game.getVisitor())) {
+                        double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
+                                * (info.getBet().getAmount() / totalAmountVisitor);
+                        socket.SendReply(new Reply(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                                info.getBetterIp(), info.getBetterPort(),
+                                1, winAmount));
+                    } else {
+                        socket.SendReply(new Reply(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                                info.getBetterIp(), info.getBetterPort(),
+                                1, 0 - info.getBet().getAmount()));
+                    }
+                }
+            } else {
+                for (int i = 0; i < bets.size(); i++) {
+                    BetInfo info = bets.get(i);
+                        socket.SendReply(new Reply(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
+                                info.getBetterIp(), info.getBetterPort(),
+                                1, 0));
                 }
             }
-        } else if(game.getHostGoals() < game.getVisitorGoals()) {
-            for (int i = 0; i < bets.size(); i++) {
-                BetInfo info = bets.get(i);
-                if(info.getBet().getBetOn().equals(game.getVisitor())) {
-                    double winAmount = 0.75 * (totalAmountHost + totalAmountVisitor)
-                            * (info.getBet().getAmount() / totalAmountVisitor);
-                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
-                            info.getBetterIp(), info.getBetterPort(),
-                            1, winAmount));
-                } else {
-                    socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
-                            info.getBetterIp(), info.getBetterPort(),
-                            1, 0 - info.getBet().getAmount()));
-                }
-            }
-        } else {
-            for (int i = 0; i < bets.size(); i++) {
-                BetInfo info = bets.get(i);
-                socket.SendNotification(new Notification(InetAddress.getLocalHost(), Constants.SERVER_COMM_PORT,
-                        info.getBetterIp(), info.getBetterPort(),
-                        1, 0));
-            }
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         }
     }
 

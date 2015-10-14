@@ -63,7 +63,7 @@ public class Main {
                 System.out.println("Client socket send request correctly");
                 Reply rep = new Reply(clientRequest.GetIPAddress(), clientRequest.GetPort(),
                         clientRequest.getReceiverIp(), clientRequest.getReceiverPort(),
-                        clientRequest.getID(), new Game());
+                        clientRequest.getID(), new Game(1, "host", "visitor"));
                 server.SendReply(rep);
                 Reply serverReply = client.GetReply();
                 if (serverReply.getRequestID() == req.getID()) {
