@@ -1,7 +1,6 @@
 package HockeyLive.Common.Models;
 
 import java.io.Serializable;
-import java.util.Random;
 
 /**
  * Michaël Beaulieu         13048132
@@ -14,13 +13,15 @@ public class Game implements Serializable {
     private String Visitor;
     private int HostGoals;
     private int VisitorGoals;
+    private boolean Completed;
 
     public Game(int id, String host, String visitor) {
-        this.GameID = id;
-        this.Host = host;
-        this.Visitor = visitor;
-        this.HostGoals = 0;
-        this.VisitorGoals = 0;
+        GameID = id;
+        Host = host;
+        Visitor = visitor;
+        HostGoals = 0;
+        VisitorGoals = 0;
+        Completed = false;
     }
 
     public int getGameID() {
@@ -77,5 +78,21 @@ public class Game implements Serializable {
 
     public String GetGameDescription() {
         return String.format("%s vs. %s / %d-%d", Host, Visitor, HostGoals, VisitorGoals);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Game) {
+            return ((Game) obj).getGameID() == GameID;
+        } else
+            return super.equals(obj);
+    }
+
+    public boolean isCompleted() {
+        return Completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        Completed = completed;
     }
 }

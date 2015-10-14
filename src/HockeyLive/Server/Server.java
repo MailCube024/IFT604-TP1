@@ -1,7 +1,7 @@
 package HockeyLive.Server;
 
-import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.Bet;
 import HockeyLive.Common.Models.Game;
@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Created by Michaël on 10/12/2015.
@@ -30,6 +31,11 @@ public class Server implements Runnable {
         runningGames = new ArrayList<>();
         runningGameInfos = new ConcurrentHashMap<>();
         placedBets = new ConcurrentHashMap<>();
+    }
+
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.start();
     }
 
     public void execute() {
@@ -76,6 +82,10 @@ public class Server implements Runnable {
         return runningGames;
     }
 
+    public List<Game> GetNonCompletedGames() {
+        return runningGames.stream().filter(g -> !g.isCompleted()).collect(Collectors.toList());
+    }
+
     public synchronized GameInfo GetMatchInfo(Game match) {
         return runningGameInfos.get(match);
     }
@@ -115,10 +125,5 @@ public class Server implements Runnable {
     public void start(){
         serverThread = new Thread(this);
         serverThread.start();
-    }
-
-    public static void main(String[] args){
-        Server server = new Server();
-        server.start();
     }
 }
