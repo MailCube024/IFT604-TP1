@@ -7,13 +7,14 @@ import HockeyLive.Common.helpers.SerializationHelper;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.SocketTimeoutException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Created by Michaï¿½l on 10/12/2015.
  */
 public class ClientSocket {
     private DatagramSocket epSocket;
@@ -33,15 +34,14 @@ public class ClientSocket {
         while (true) {
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             try {
-                System.out.println("Client: Receiving message");
+                if (tReceive.isInterrupted()) break;
                 epSocket.receive(packet);
                 Reply reply = (Reply) SerializationHelper.deserialize(packet.getData());
-                replyBuffer.add(reply);
+                replyBuffer.put(reply);
             } catch (Exception e) {
-                e.printStackTrace();
                 CloseSocket();
+                break;
             }
-            if(tReceive.isInterrupted()) break;
         }
     }
 
@@ -49,9 +49,7 @@ public class ClientSocket {
         try {
             byte[] data = SerializationHelper.serialize(request);
             DatagramPacket packet = new DatagramPacket(data, data.length, request.GetIPAddress(), request.GetPort());
-            DatagramSocket requestSocket = new DatagramSocket();
-            requestSocket.send(packet);
-            requestSocket.close();
+            epSocket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -62,8 +60,8 @@ public class ClientSocket {
     }
 
     public void CloseSocket() {
-        if (epSocket.isConnected())
-            epSocket.close();
+        tReceive.interrupt();
+        epSocket.close();
     }
 
     @Override
