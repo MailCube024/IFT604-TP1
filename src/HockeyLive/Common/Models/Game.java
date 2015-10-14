@@ -7,14 +7,14 @@ import java.io.Serializable;
  * Benoit Jeunehomme        13055392
  * Bruno-Pier Touchette     13045732
  */
-public class Game implements Serializable{
+public class Game implements Serializable {
     private int GameID;
     private String Host;
     private String Visitor;
     private int HostGoals;
     private int VisitorGoals;
 
-    public Game(int id, String host, String visitor){
+    public Game(int id, String host, String visitor) {
         this.GameID = id;
         this.Host = host;
         this.Visitor = visitor;
@@ -22,25 +22,59 @@ public class Game implements Serializable{
         this.VisitorGoals = 0;
     }
 
-    public int getGameID() { return this.GameID; }
+    public int getGameID() {
+        return GameID;
+    }
 
-    public String getHost() { return this.Host; }
-    public void setHost(String host) { this.Host = host; }
+    public String getHost() {
+        return Host;
+    }
 
-    public String getVisitor() { return this.Visitor; }
-    public void setVisitor(String visitor) { this.Visitor = visitor; }
+    public void setHost(String host) {
+        Host = host;
+    }
 
-    public int getHostGoals() { return this.HostGoals; }
-    public void setHostGoals(int hostGoals) { this.HostGoals = hostGoals; }
-    public void incHostGoals() { this.HostGoals++; }
-    public void decHostGoals() { this.HostGoals--; }
+    public String getVisitor() {
+        return Visitor;
+    }
 
-    public int getVisitorGoals() { return this.VisitorGoals; }
-    public void setVisitorGoals(int visitorGoals) { this.VisitorGoals = visitorGoals; }
-    public void incVisitorGoals() { this.VisitorGoals++; }
-    public void decVisitorGoals() { this.VisitorGoals--; }
+    public void setVisitor(String visitor) {
+        Visitor = visitor;
+    }
 
-    public String GetGameDescription(){
-        return String.format("%s vs. %s / %d-%d",Host,Visitor,HostGoals,VisitorGoals);
+    public int getHostGoals() {
+        return HostGoals;
+    }
+
+    public void setHostGoals(int hostGoals) {
+        HostGoals = hostGoals;
+    }
+
+    public void incHostGoals() {
+        HostGoals++;
+    }
+
+    public void decHostGoals() {
+        HostGoals--;
+    }
+
+    public int getVisitorGoals() {
+        return VisitorGoals;
+    }
+
+    public void setVisitorGoals(int visitorGoals) {
+        VisitorGoals = visitorGoals;
+    }
+
+    public void incVisitorGoals() {
+        VisitorGoals++;
+    }
+
+    public void decVisitorGoals() {
+        VisitorGoals--;
+    }
+
+    public String GetGameDescription() {
+        return String.format("%s vs. %s / %d-%d", Host, Visitor, HostGoals, VisitorGoals);
     }
 }
