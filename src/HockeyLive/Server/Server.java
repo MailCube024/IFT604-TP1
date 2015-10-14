@@ -23,12 +23,13 @@ import java.util.concurrent.Executors;
 /**
  * Created by Michaël on 10/12/2015.
  */
-public class Server {
+public class Server implements Runnable {
     private List<Game> runningGames;
     private ConcurrentMap<Game,GameInfo> runningGameInfos;
     private ConcurrentMap<Integer,List<Bet>> placedBets;
     private ConcurrentMap<Integer,ConcurrentMap<InetAddress,ConcurrentMap<Integer,ClientMessage>>> acks;
     private ServerSocket socket;
+    private Thread serverThread;
 
     public Server() {
         runningGames = new ArrayList<>();
@@ -60,11 +61,6 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public static void main(String[] args){
-        Server server = new Server();
-        server.execute();
     }
 
     public void SendReply(ClientMessage clientMessage, Object data) {
@@ -239,5 +235,20 @@ public class Server {
                 }
             }
         }
+    }
+
+    @Override
+    public void run() {
+        execute();
+    }
+
+    public void start(){
+        serverThread = new Thread(this);
+        serverThread.start();
+    }
+
+    public static void main(String[] args){
+        Server server = new Server();
+        server.start();
     }
 }

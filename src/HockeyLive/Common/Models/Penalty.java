@@ -17,11 +17,11 @@ public class Penalty implements Serializable {
         this.TimeLeft = time;
     }
 
-    public String getPenaltyHolder() { return this.PenaltyHolder; }
-    public void setPenaltyHolder(String penaltyHolder) { this.PenaltyHolder = penaltyHolder; }
+    public String getPenaltyHolder() { return PenaltyHolder; }
+    public void setPenaltyHolder(String penaltyHolder) { PenaltyHolder = penaltyHolder; }
 
-    public Duration getTimeLeft() { return this.TimeLeft; }
-    public void setTimeLeft(Duration timeLeft) { this.TimeLeft = timeLeft; }
-    public void incTimeLeft(Duration time) { this.TimeLeft.plus(time); }
-    public void decTimeLeft(Duration time) { this.TimeLeft.minus(time); }
+    public Duration getTimeLeft() { return TimeLeft; }
+    public void setTimeLeft(Duration timeLeft) { TimeLeft = timeLeft; }
+    public void incTimeLeft(Duration time) { TimeLeft = TimeLeft.plus(time); }
+    public void decTimeLeft(Duration time) { TimeLeft = TimeLeft.minus(time); }
 }
