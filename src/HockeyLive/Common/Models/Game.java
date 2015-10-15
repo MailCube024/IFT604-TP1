@@ -11,6 +11,7 @@ public class Game implements Serializable {
     private int GameID;
     private String Host;
     private String Visitor;
+    private boolean Completed;
 
     public Game(int id, String host, String visitor) {
         this.GameID = id;
@@ -38,7 +39,23 @@ public class Game implements Serializable {
         Visitor = visitor;
     }
 
-    public String toString(){
-        return String.format("%s vs. %s",Host,Visitor);
+    public String toString() {
+        return String.format("%s vs. %s", Host, Visitor);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Game) {
+            return ((Game) obj).getGameID() == GameID;
+        } else
+            return super.equals(obj);
+    }
+
+    public boolean isCompleted() {
+        return Completed;
+    }
+
+    public void setCompleted(boolean completed) {
+        Completed = completed;
     }
 }

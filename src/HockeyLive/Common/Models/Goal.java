@@ -7,7 +7,7 @@ public class Goal {
     private String GoalHolder;
     private int amount;
 
-    public Goal(String player){
+    public Goal(String player) {
         this.GoalHolder = player;
         amount = 1;
     }
@@ -28,15 +28,15 @@ public class Goal {
         this.amount = amount;
     }
 
-    public void incAmount(){
+    public void incAmount() {
         this.amount++;
     }
 
-    public void decAmount(){
+    public void decAmount() {
         this.amount--;
     }
 
-    public String toString(){
-        return String.format("%s,   %d",GoalHolder, amount);
+    public String toString() {
+        return String.format("%s,   %d", GoalHolder, amount);
     }
 }

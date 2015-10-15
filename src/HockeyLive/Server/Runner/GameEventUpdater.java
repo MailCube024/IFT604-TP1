@@ -7,16 +7,15 @@ import java.util.Timer;
 /**
  * Created by Michaël on 10/14/2015.
  */
-public class Chronometer {
+public class GameEventUpdater {
     Timer timer;
 
-    public Chronometer(int seconds, Server server) {
+    public GameEventUpdater(int seconds, Server server) {
         timer = new Timer();
-        timer.schedule(new ChronometerUpdateTask(server), seconds * 1000);
+        timer.schedule(new GameEventUpdateTask(server), seconds * 1000);
     }
 
     public void StopChronometer() {
         timer.cancel();
     }
-
 }

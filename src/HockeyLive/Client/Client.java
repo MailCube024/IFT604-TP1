@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Created by Michaï¿½l on 10/12/2015.
  */
 public class Client {
 
@@ -45,7 +45,7 @@ public class Client {
         return localhost;
     }
 
-    public static ArrayList<Game> RequestGameList() {
+    public static List<Game> RequestGameList() {
         ClientMessage message = new ClientMessage(ClientMessageType.GetMatches, 1,
                 GetLocalhost(), Constants.SERVER_COMM_PORT,
                 GetLocalhost(), Constants.CLIENT_COMM_PORT,
@@ -55,7 +55,7 @@ public class Client {
 
         try {
             ServerMessage serverMessage = GetSocket().GetMessage();
-            ArrayList<Game> gameList = (ArrayList<Game>)serverMessage.getData();
+            List<Game> gameList = (List<Game>)serverMessage.getData();
 
             return gameList;
         } catch (InterruptedException e) {

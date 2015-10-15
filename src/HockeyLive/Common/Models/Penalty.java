@@ -9,6 +9,9 @@ import java.time.Duration;
  * Bruno-Pier Touchette     13045732
  */
 public class Penalty implements Serializable {
+    public static final int LONG_PENALTY = 5;   // in minutes
+    public static final int SHORT_PENALTY = 2;  // in minutes
+
     private String PenaltyHolder;
     private Duration TimeLeft;
 
@@ -17,15 +20,31 @@ public class Penalty implements Serializable {
         this.TimeLeft = time;
     }
 
-    public String getPenaltyHolder() { return this.PenaltyHolder; }
-    public void setPenaltyHolder(String penaltyHolder) { this.PenaltyHolder = penaltyHolder; }
+    public String getPenaltyHolder() {
+        return this.PenaltyHolder;
+    }
 
-    public Duration getTimeLeft() { return this.TimeLeft; }
-    public void setTimeLeft(Duration timeLeft) { this.TimeLeft = timeLeft; }
-    public void incTimeLeft(Duration time) { this.TimeLeft.plus(time); }
-    public void decTimeLeft(Duration time) { this.TimeLeft.minus(time); }
+    public void setPenaltyHolder(String penaltyHolder) {
+        this.PenaltyHolder = penaltyHolder;
+    }
 
-    public String toString(){
-        return String.format("%s, %d:%02d",PenaltyHolder, TimeLeft.getSeconds() / 60, TimeLeft.getSeconds() % 60);
+    public Duration getTimeLeft() {
+        return this.TimeLeft;
+    }
+
+    public void setTimeLeft(Duration timeLeft) {
+        this.TimeLeft = timeLeft;
+    }
+
+    public void incTimeLeft(Duration time) {
+        this.TimeLeft.plus(time);
+    }
+
+    public void decTimeLeft(Duration time) {
+        this.TimeLeft.minus(time);
+    }
+
+    public String toString() {
+        return String.format("%s, %d:%02d", PenaltyHolder, TimeLeft.getSeconds() / 60, TimeLeft.getSeconds() % 60);
     }
 }

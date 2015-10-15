@@ -17,6 +17,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Michaël Beaulieu         13048132
@@ -80,7 +81,7 @@ public class ClientForm {
         MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (MatchList.getSelectedIndex() != -1){
+                if (MatchList.getSelectedIndex() != -1) {
                     cmdRefresh.setEnabled(true);
                     cmdPlaceBet.setEnabled(true);
                     SelectedGame = (Game) MatchList.getSelectedValue();
@@ -133,8 +134,8 @@ public class ClientForm {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Double amount = Double.valueOf(txtBetAmount.getText().equals("") ? "0" : txtBetAmount.getText());
-                if(amount != 0){
-                    if(HostRadioButton.isSelected()){
+                if (amount != 0) {
+                    if (HostRadioButton.isSelected()) {
 
                         /**********************************/
                         //Execute request for bet.
@@ -142,7 +143,7 @@ public class ClientForm {
 
                         Bet newBet = new Bet(amount, SelectedGame.getHost(), SelectedGame.getGameID());
                         System.out.println("You just bet on the host team.");
-                    } else if (VisitorRadioButton.isSelected()){
+                    } else if (VisitorRadioButton.isSelected()) {
 
                         /**********************************/
                         //Execute request for bet.
@@ -174,7 +175,7 @@ public class ClientForm {
         //Envoie d'une request au serveur pour la liste des matches du jour.
         //Au retour, binder la liste des matches.
         /****************************************************************************/
-        ArrayList<Game> gameList = Client.RequestGameList();
+        List<Game> gameList = Client.RequestGameList();
         form.MatchList.setListData(gameList.toArray());
     }
 

@@ -1,52 +1,52 @@
 package HockeyLive.Server;
 
-import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Constants;
-import HockeyLive.Common.Models.*;
+import HockeyLive.Common.Models.Bet;
+import HockeyLive.Common.Models.Game;
+import HockeyLive.Common.Models.GameInfo;
 import HockeyLive.Server.Communication.ServerSocket;
+import HockeyLive.Server.Factory.GameFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * Created by Micha�l on 10/12/2015.
  */
 public class Server implements Runnable {
-    private ArrayList<Game> runningGames;
-    private ConcurrentMap<Game,GameInfo> runningGameInfos;
-    private ConcurrentMap<Integer,List<Bet>> placedBets;
-    private ConcurrentMap<Integer,ConcurrentMap<InetAddress,ConcurrentMap<Integer,ClientMessage>>> acks;
+    private List<Game> runningGames;
+    private ConcurrentMap<Integer, GameInfo> runningGameInfos;
+    private ConcurrentMap<Integer, List<Bet>> placedBets;
+    private ConcurrentMap<Integer, ConcurrentMap<InetAddress, ConcurrentMap<Integer, ClientMessage>>> acks;
     private ServerSocket socket;
     private Thread serverThread;
+
+    private Lock gameUpdateLock;
 
     public Server() {
         runningGames = new ArrayList<>();
         runningGameInfos = new ConcurrentHashMap<>();
         placedBets = new ConcurrentHashMap<>();
+        gameUpdateLock = new ReentrantLock();
         acks = new ConcurrentHashMap<>();
+        InitializeGames();
+    }
 
-        /**For test purpose creating a List with stuff in it. REMOVE AFTER TEST IS DONE.**/
-        GameInfo info1 = new GameInfo(1, 20);
-        AddGame(new Game(1, "Montreal", "Ottawa"), info1);
-        info1.addHostGoals(new Goal("Montreal player #56"));
-        info1.addHostGoals(new Goal("Montreal player #56"));
-        info1.addHostGoals(new Goal("Montreal player #32"));
-        info1.addVisitorGoals(new Goal("Ottawa player #87"));
-        info1.addHostPenalties(new Penalty("Montreal player #45", Duration.ofMinutes(2)));
-        info1.addVisitorPenalties(new Penalty("Ottawa player #22", Duration.ofMinutes(10)));
-        info1.addVisitorPenalties(new Penalty("Ottawa player #53", Duration.ofMinutes(2)));
-
-        AddGame(new Game(2, "Vancouver", "Calgary"), new GameInfo(2, 10));
-        AddGame(new Game(3, "San-Jose", "St-Louis"), new GameInfo(3, 10));
-
-        /****************************************************************************/
-
+    public static void main(String[] args) {
+        Server server = new Server();
+        server.start();
     }
 
     public void execute() {
@@ -54,11 +54,7 @@ public class Server implements Runnable {
             socket = new ServerSocket(Constants.SERVER_COMM_PORT);
             ExecutorService threadPool = Executors.newCachedThreadPool();
 
-            //threadPool.execute(cmdHandler);
-
-            while (true)
-            {
-                //socket.Receive();
+            while (true) {
 
                 try {
                     ClientMessage clientMessage = socket.GetMessage();
@@ -88,45 +84,39 @@ public class Server implements Runnable {
     public synchronized void AddGame(Game game, GameInfo info) {
         if (runningGames.size() < 10) {
             runningGames.add(game);
-            runningGameInfos.put(game, info);
+            runningGameInfos.put(game.getGameID(), info);
             placedBets.put(game.getGameID(), new ArrayList<>());
             acks.put(game.getGameID(), new ConcurrentHashMap<>());
         }
     }
 
-    public synchronized void AddPenalty(Game game, String team, Penalty penalty) {
-        GameInfo info = runningGameInfos.get(game);
-
-        if(team.equals(game.getHost())) {
-            info.getHostPenalties().add(penalty);
-        } else {
-            info.getVisitorPenalties().add(penalty);
-        }
-    }
-
-    public synchronized ArrayList<Game> GetMatches() {
+    public synchronized List<Game> GetGames() {
         return runningGames;
     }
 
-    public synchronized GameInfo GetMatchInfo(Game match) {
+    public synchronized List<Game> GetNonCompletedGames() {
+        return runningGames.stream().filter(g -> !g.isCompleted()).collect(Collectors.toList());
+    }
+
+    public synchronized GameInfo GetGameInfo(Game match) {
         return runningGameInfos.get(match);
     }
 
-    public synchronized GameInfo GetMatchInfo(Object match) {
+    public synchronized GameInfo GetGameInfo(Object match) {
         try {
-            Game m = (Game)match;
-            return GetMatchInfo(m);
+            Game m = (Game) match;
+            return GetGameInfo(m);
         } catch (Exception e) {
-            return  null;
+            return null;
         }
     }
 
     public void AddAck(ClientMessage message) {
-        Bet bet = (Bet)message.getData();
+        Bet bet = (Bet) message.getData();
 
-        ConcurrentMap<InetAddress,ConcurrentMap<Integer,ClientMessage>> gameAcks = acks.get(message.getID());
-        gameAcks.putIfAbsent(message.GetIPAddress(), new ConcurrentHashMap<Integer,ClientMessage>());
-        ConcurrentMap<Integer,ClientMessage> addressAcks = gameAcks.get(message.GetIPAddress());
+        ConcurrentMap<InetAddress, ConcurrentMap<Integer, ClientMessage>> gameAcks = acks.get(message.getID());
+        gameAcks.putIfAbsent(message.GetIPAddress(), new ConcurrentHashMap<>());
+        ConcurrentMap<Integer, ClientMessage> addressAcks = gameAcks.get(message.GetIPAddress());
         addressAcks.put(message.GetPort(), message);
 
         acks.notifyAll();
@@ -134,7 +124,7 @@ public class Server implements Runnable {
 
     public synchronized void PlaceBet(Bet bet, ClientMessage message) {
         Game game = runningGames.get(bet.getGameID());
-        GameInfo info = runningGameInfos.get(game);
+        GameInfo info = runningGameInfos.get(game.getGameID());
 
         boolean added = false;
 
@@ -146,7 +136,7 @@ public class Server implements Runnable {
             return;
         }
 
-        if(info.getPeriod() <= 2) {
+        if (info.getPeriod() <= 2) {
             added = true;
             (placedBets.get(bet.getGameID())).add(bet);
         }
@@ -154,7 +144,7 @@ public class Server implements Runnable {
         socket.Send(new ServerMessage(localhost, Constants.SERVER_COMM_PORT,
                 message.GetIPAddress(), message.GetPort(), message.getID(), added));
 
-        while(info.getPeriod() <= 3) {
+        while (info.getPeriod() <= 3) {
             try {
                 game.wait();
             } catch (InterruptedException e) {
@@ -162,7 +152,7 @@ public class Server implements Runnable {
             }
         }
 
-        bet.setAmountGained(computeAmountGained(bet, game, info));
+        bet.setAmountGained(ComputeAmountGained(bet, game));
 
         ServerMessage serverMessage = new ServerMessage(message.GetIPAddress(),
                 message.GetPort(),
@@ -171,7 +161,7 @@ public class Server implements Runnable {
                 message.getID(),
                 bet);
 
-        while (! (acks.containsKey(game.getGameID())
+        while (!(acks.containsKey(game.getGameID())
                 && acks.get(game.getGameID()).containsKey(message.GetIPAddress())
                 && acks.get(game.getGameID()).get(message.GetIPAddress()).containsKey(message.GetPort()))) {
             socket.Send(serverMessage);
@@ -191,9 +181,10 @@ public class Server implements Runnable {
             SendReply(message, false);
         }
     }
-    
-    private double computeAmountGained(Bet bet, Game game, GameInfo info) {
+
+    private double ComputeAmountGained(Bet bet, Game game) {
         List<Bet> bets = placedBets.get(game.getGameID());
+        GameInfo info = GetGameInfo(game);
 
         double totalAmountHost = 0;
         double totalAmountVisitor = 0;
@@ -201,7 +192,7 @@ public class Server implements Runnable {
         for (int i = 0; i < bets.size(); i++) {
             Bet b = bets.get(i);
 
-            if(b.getBetOn().equals(game.getHost())) {
+            if (b.getBetOn().equals(game.getHost())) {
                 totalAmountHost += b.getAmount();
             } else {
                 totalAmountVisitor += b.getAmount();
@@ -210,44 +201,23 @@ public class Server implements Runnable {
 
         double amountGained = 0;
 
-        if(info.getHostGoalsTotal() > info.getVisitorGoalsTotal()) {
-            if(bet.getBetOn().equals(game.getHost())) {
+        if (info.getHostGoalsTotal() > info.getVisitorGoalsTotal()) {
+            if (bet.getBetOn().equals(game.getHost())) {
                 amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountHost);
             } else {
                 amountGained = 0 - bet.getAmount();
             }
-        } else if(info.getHostGoalsTotal() < info.getVisitorGoalsTotal()) {
-            if(bet.getBetOn().equals(game.getHost())) {
+        } else if (info.getHostGoalsTotal() < info.getVisitorGoalsTotal()) {
+            if (bet.getBetOn().equals(game.getHost())) {
                 amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountVisitor);
             } else {
                 amountGained = 0 - bet.getAmount();
             }
         }
-        
+
         return amountGained;
-    }
-
-    public synchronized void LeapTime(Duration duration) {
-        for (int i = 0; i < runningGames.size(); ++i) {
-            Game game = runningGames.get(i);
-            GameInfo info = runningGameInfos.get(game);
-
-            if(info.getPeriod() <= 3) {
-                info.setPeriodChronometer(info.getPeriodChronometer().plus(duration));
-
-                if(info.getPeriodChronometer().compareTo(Duration.ofMinutes(20)) >= 0)
-                {
-                    info.setPeriod(1 + info.getPeriod());
-                    info.setPeriodChronometer(Duration.ofMinutes(0));
-                }
-
-                if(info.getPeriod() > 3) {
-                    game.notifyAll();
-                }
-            }
-        }
     }
 
     @Override
@@ -255,13 +225,33 @@ public class Server implements Runnable {
         execute();
     }
 
-    public void start(){
+    public void start() {
         serverThread = new Thread(this);
         serverThread.start();
     }
 
-    public static void main(String[] args){
-        Server server = new Server();
-        server.start();
+    private void InitializeGames() {
+        for (int i = 0; i < 10; ++i) {
+            Game g = GameFactory.GenerateGame();
+            GameInfo info = GameFactory.GenerateGameInfo(g);
+            AddGame(g, info);
+        }
+    }
+
+    public void stop() {
+        serverThread.interrupt();
+        socket.CloseSocket();
+    }
+
+    public void LockForUpdate() {
+        gameUpdateLock.lock();
+    }
+
+    public void UnlockUpdates() {
+        gameUpdateLock.unlock();
+    }
+
+    public void SetPeriodLength(int minutes) {
+        GameFactory.UpdatePeriodLength(minutes);
     }
 }
