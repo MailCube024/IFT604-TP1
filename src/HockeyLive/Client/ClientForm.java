@@ -1,11 +1,13 @@
 package HockeyLive.Client;
 
-import HockeyLive.Common.Models.Game;
-import HockeyLive.Common.Models.GameInfo;
+import HockeyLive.Common.Models.*;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.time.Duration;
 import java.util.ArrayList;
 
 /**
@@ -40,13 +42,24 @@ public class ClientForm {
     private JList HostScorerList;
     private JList VisitorScorerList;
 
+    private Game SelectedGame;
+
     public ClientForm() {
-        /**For test purpose creating a List with stuff in it.**/
+        /**For test purpose creating a List with stuff in it. REMOVE AFTER TEST IS DONE.**/
         ArrayList<Game> testListGame = new ArrayList<Game>();
         ArrayList<GameInfo> testListGameInfo = new ArrayList<GameInfo>();
 
         testListGame.add(new Game(1, "Montreal", "Ottawa"));
-        testListGameInfo.add(new GameInfo(1, 10));
+        GameInfo info1 = new GameInfo(1, 20);
+        info1.addHostGoals(new Goal("Montreal player #56"));
+        info1.addHostGoals(new Goal("Montreal player #56"));
+        info1.addHostGoals(new Goal("Montreal player #32"));
+        info1.addVisitorGoals(new Goal("Ottawa player #87"));
+        info1.addHostPenalties(new Penalty("Montreal player #45", Duration.ofMinutes(2)));
+        info1.addVisitorPenalties(new Penalty("Ottawa player #22", Duration.ofMinutes(10)));
+        info1.addVisitorPenalties(new Penalty("Ottawa player #53", Duration.ofMinutes(2)));
+        testListGameInfo.add(info1);
+
         testListGame.add(new Game(2, "Vancouver", "Calgary"));
         testListGameInfo.add(new GameInfo(2, 10));
         testListGame.add(new Game(3, "San-Jose", "St-Louis"));
@@ -59,21 +72,30 @@ public class ClientForm {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 if (MatchList.getSelectedIndex() != -1){
-                    Game selectedGame = (Game) MatchList.getSelectedValue();
-                    txtHostName.setText(selectedGame.getHost());
-                    txtVisitorName.setText(selectedGame.getVisitor());
+                    cmdRefresh.setEnabled(true);
+                    cmdPlaceBet.setEnabled(true);
+                    SelectedGame = (Game) MatchList.getSelectedValue();
+                    txtHostName.setText(SelectedGame.getHost());
+                    txtVisitorName.setText(SelectedGame.getVisitor());
 
+                    /********************************************************************************************/
                     //Normally we will make a request with the GameID here.
                     //Create a thread for the request.
                     //And receive de GameInfo.
-                    /**Test GameInfo get here.**/
+                    /********************************************************************************************/
+
+                    /**Test GameInfo get here. Remove this after test is done. Keep some logic for the thread refresh**/
                     GameInfo selectedGameInfo;
 
                     for (GameInfo gi : testListGameInfo) {
-                        if (gi.getGameID() == selectedGame.getGameID()) {
+                        if (gi.getGameID() == SelectedGame.getGameID()) {
                             selectedGameInfo = gi;
                             txtPeriod.setText(String.valueOf(selectedGameInfo.getPeriod()));
-                            txtTimer.setText(String.valueOf(selectedGameInfo.getPeriodChronometer().minusSeconds(30).toMinutes()));
+
+                            String minutes = String.valueOf(selectedGameInfo.getPeriodChronometer().getSeconds() / 60);
+                            String seconds = String.format("%02d", selectedGameInfo.getPeriodChronometer().getSeconds() % 60);
+
+                            txtTimer.setText(String.format("%s:%s", minutes, seconds));
                             txtHostGoals.setText(String.valueOf(selectedGameInfo.getHostGoalsTotal()));
                             txtVisitorGoals.setText(String.valueOf(selectedGameInfo.getVisitorGoalsTotal()));
                             HostScorerList.setListData(selectedGameInfo.getHostGoals().toArray());
@@ -87,6 +109,48 @@ public class ClientForm {
                 }
             }
         });
+
+        cmdRefresh.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                /*********************************************************************/
+                //Execute a request to the server for a refresh of the GameInfo.
+                //Reset automatic refresh timer.
+                /*********************************************************************/
+            }
+        });
+
+        cmdPlaceBet.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Double amount = Double.valueOf(txtBetAmount.getText().equals("") ? "0" : txtBetAmount.getText());
+                if(amount != 0){
+                    if(HostRadioButton.isSelected()){
+
+                        /**********************************/
+                        //Execute request for bet.
+                        /**********************************/
+
+                        Bet newBet = new Bet(amount, SelectedGame.getHost(), SelectedGame.getGameID());
+                        System.out.println("You just bet on the host team.");
+                    } else if (VisitorRadioButton.isSelected()){
+
+                        /**********************************/
+                        //Execute request for bet.
+                        /**********************************/
+
+                        Bet newBet = new Bet(amount, SelectedGame.getVisitor(), SelectedGame.getGameID());
+                        System.out.println("You just bet on the visitor team.");
+
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Please select a team to bet on.");
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(null, "Please enter an amount to bet.");
+                }
+                //Execute a request for a bet.
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -96,9 +160,10 @@ public class ClientForm {
         frame.pack();
         frame.setVisible(true);
 
-
+        /****************************************************************************/
         //Envoie d'une request au serveur pour la liste des matches du jour.
         //Au retour, binder la liste des matches.
+        /****************************************************************************/
 
     }
 
