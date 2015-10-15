@@ -108,7 +108,7 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
-        if(HostGoals.add(g)){
+        if (HostGoals.add(g)) {
             this.HostGoalsTotal++;
             return true;
         }
@@ -130,7 +130,7 @@ public class GameInfo implements Serializable {
         return VisitorGoals.add(g);
     }
 
-       public int getHostGoalsTotal() {
+    public int getHostGoalsTotal() {
         return HostGoalsTotal;
     }
 
