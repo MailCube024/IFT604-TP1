@@ -22,12 +22,19 @@ public class GameFactory {
                     "Edmonton", "New-York", "Florida", "Tampa Bay", "Minnesota", "Columbus", "Vancouver",
                     "Los Angeles", "Calgary", "Nashville", "Dallas", "Anaheim", "Buffalo", "Detroit",
                     "Philadelphia", "Boston", "Winnipeg", "Colorado", "Arizona"};
+
     private static int gameId = 0;
     private static int periodLength = 20;  // in minutes
+    private static int playerNo = 0;
+
     private static List<String> teams = new ArrayList<>(Arrays.asList(TEAM_NAMES));
 
     private static int GetNextID() {
         return ++gameId;
+    }
+
+    private static int GetNextPlayerNo() {
+        return ++playerNo;
     }
 
     public static Game GenerateGame() {
@@ -63,7 +70,7 @@ public class GameFactory {
 
         if (generator.nextDouble() > P_EVEN) {
             //Create a new goal for side
-            g = new Goal("Player Name");
+            g = new Goal("Player " + GetNextPlayerNo());
             info.getSideGoals(side);
         } else {
             //Add a goal value to a random goal

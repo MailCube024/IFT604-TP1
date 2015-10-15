@@ -8,6 +8,8 @@ import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.Models.GameInfo;
 import HockeyLive.Server.Communication.ServerSocket;
 import HockeyLive.Server.Factory.GameFactory;
+import HockeyLive.Server.Runner.Chronometer;
+import HockeyLive.Server.Runner.GameEventUpdater;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -26,12 +28,17 @@ import java.util.stream.Collectors;
  * Created by Michaël on 10/12/2015.
  */
 public class Server implements Runnable {
+    private static int UPDATE_INTERVAL = 30;    //in seconds
+
     private List<Game> runningGames;
     private ConcurrentMap<Integer, GameInfo> runningGameInfos;
     private ConcurrentMap<Integer, List<Bet>> placedBets;
     private ConcurrentMap<Integer, ConcurrentMap<InetAddress, ConcurrentMap<Integer, ClientMessage>>> acks;
     private ServerSocket socket;
+
     private Thread serverThread;
+    private Chronometer chronometer;
+    private GameEventUpdater eventUpdater;
 
     private Lock gameUpdateLock;
 
@@ -41,7 +48,7 @@ public class Server implements Runnable {
         placedBets = new ConcurrentHashMap<>();
         gameUpdateLock = new ReentrantLock();
         acks = new ConcurrentHashMap<>();
-        InitializeGames();
+        Initialize();
     }
 
     public static void main(String[] args) {
@@ -231,6 +238,16 @@ public class Server implements Runnable {
     public void start() {
         serverThread = new Thread(this);
         serverThread.start();
+        chronometer = new Chronometer(UPDATE_INTERVAL, this);
+        eventUpdater = new GameEventUpdater(UPDATE_INTERVAL, this);
+    }
+
+    public void Initialize() {
+        runningGames.clear();
+        runningGameInfos.clear();
+        acks.clear();
+        placedBets.clear();
+        InitializeGames();
     }
 
     private void InitializeGames() {
@@ -242,6 +259,8 @@ public class Server implements Runnable {
     }
 
     public void stop() {
+        eventUpdater.Stop();
+        chronometer.Stop();
         serverThread.interrupt();
         socket.CloseSocket();
     }

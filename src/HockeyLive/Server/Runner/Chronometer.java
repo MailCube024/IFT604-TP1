@@ -15,7 +15,7 @@ public class Chronometer {
         timer.schedule(new ChronometerUpdateTask(server), seconds * 1000);
     }
 
-    public void StopChronometer() {
+    public void Stop() {
         timer.cancel();
     }
 

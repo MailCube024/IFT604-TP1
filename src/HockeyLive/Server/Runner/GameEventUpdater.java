@@ -15,7 +15,7 @@ public class GameEventUpdater {
         timer.schedule(new GameEventUpdateTask(server), seconds * 1000);
     }
 
-    public void StopChronometer() {
+    public void Stop() {
         timer.cancel();
     }
 }
