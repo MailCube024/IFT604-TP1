@@ -48,7 +48,7 @@ public class GameInfo implements Serializable {
     }
 
     public void incPeriodChronometer(Duration time) {
-       PeriodChronometer = PeriodChronometer.plus(time);
+        PeriodChronometer = PeriodChronometer.plus(time);
     }
 
     public void decPeriodChronometer(Duration time) {
@@ -76,10 +76,6 @@ public class GameInfo implements Serializable {
         return HostPenalties;
     }
 
-    public void setHostPenalties(List<Penalty> hostPenalties) {
-        HostPenalties = hostPenalties;
-    }
-
     public boolean addHostPenalties(Penalty p) {
         return HostPenalties.add(p);
     }
@@ -92,91 +88,76 @@ public class GameInfo implements Serializable {
         return VisitorPenalties;
     }
 
-    public void setVisitorPenalties(List<Penalty> visitorPenalties) {
-        VisitorPenalties = visitorPenalties;
+    private boolean removeVisitorPenalties(Penalty p) {
+        return VisitorPenalties.remove(p);
     }
 
     public boolean addVisitorPenalties(Penalty p) {
         return VisitorPenalties.add(p);
     }
 
-    public boolean removeVisitorPenalties(Penalty p) {
-        return VisitorPenalties.remove(p);
-    }
-
     public List<Goal> getHostGoals() {
         return HostGoals;
     }
 
-    public void setHostGoals(List<Goal> hostGoals) {
-        HostGoals = hostGoals;
-    }
-
     public boolean addHostGoals(Goal g) {
-        for(Goal goal : HostGoals){
-            if(goal.getGoalHolder().equals(g.getGoalHolder())){
+        for (Goal goal : HostGoals) {
+            if (goal.getGoalHolder().equals(g.getGoalHolder())) {
                 goal.incAmount();
-                this.HostGoalsTotal++;
+                HostGoalsTotal++;
                 return true;
             }
         }
         return HostGoals.add(g);
     }
 
-    public boolean removeHostGoals(Goal g) {
-        for(Goal goal : HostGoals){
-            if(goal.getGoalHolder().equals(g.getGoalHolder())){
-                goal.decAmount();
-                this.HostGoalsTotal--;
-                return true;
-            }
-        }
-        return HostGoals.remove(g);
-    }
-
     public List<Goal> getVisitorGoals() {
         return VisitorGoals;
     }
 
-    public void setVisitorGoals(List<Goal> visitorGoals) {
-        VisitorGoals = visitorGoals;
-    }
-
     public boolean addVisitorGoals(Goal g) {
-        for(Goal goal : VisitorGoals){
-            if(goal.getGoalHolder().equals(g.getGoalHolder())){
+        for (Goal goal : VisitorGoals) {
+            if (goal.getGoalHolder().equals(g.getGoalHolder())) {
                 goal.incAmount();
-                this.VisitorGoalsTotal++;
+                VisitorGoalsTotal++;
                 return true;
             }
         }
         return VisitorGoals.add(g);
     }
 
-    public boolean removeVisitorGoals(Goal g){
-        for(Goal goal: VisitorGoals){
-            if(goal.getGoalHolder().equals(g.getGoalHolder())){
-                goal.decAmount();
-                this.VisitorGoalsTotal--;
-                return true;
-            }
-        }
-        return VisitorGoals.remove(g);
-    }
-
     public int getHostGoalsTotal() {
         return HostGoalsTotal;
-    }
-
-    public void setHostGoalsTotal(int hostGoalsTotal) {
-        HostGoalsTotal = hostGoalsTotal;
     }
 
     public int getVisitorGoalsTotal() {
         return VisitorGoalsTotal;
     }
 
-    public void setVisitorGoalsTotal(int visitorGoalsTotal) {
-        VisitorGoalsTotal = visitorGoalsTotal;
+    public List<Goal> getSideGoals(Side side) {
+        return (side == Side.Host) ? HostGoals : VisitorGoals;
+    }
+
+    public boolean addSideGoal(Goal g, Side side) {
+        if (side == Side.Host) {
+            return addHostGoals(g);
+        } else {
+            return addVisitorGoals(g);
+        }
+    }
+
+    public void addSidePenalty(Penalty p, Side side) {
+        if (side == Side.Host) addHostPenalties(p);
+        else addVisitorPenalties(p);
+    }
+
+    public List<Penalty> getSidePenalties(Side side) {
+        if (side == Side.Host) return getHostPenalties();
+        else return getVisitorPenalties();
+    }
+
+    public boolean removeSidePenalty(Penalty p, Side side) {
+        if (side == Side.Host) return removeHostPenalties(p);
+        else return removeVisitorPenalties(p);
     }
 }

@@ -39,8 +39,8 @@ public class Game implements Serializable {
         Visitor = visitor;
     }
 
-    public String toString(){
-        return String.format("%s vs. %s",Host,Visitor);
+    public String toString() {
+        return String.format("%s vs. %s", Host, Visitor);
     }
 
     @Override

@@ -1,7 +1,7 @@
 import HockeyLive.Client.Communication.ClientSocket;
 import HockeyLive.Common.Communication.ClientMessage;
-import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Communication.ClientMessageType;
+import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.helpers.SerializationHelper;
@@ -37,18 +37,18 @@ public class Main {
         try {
             arr = SerializationHelper.serialize(r);
             ClientMessage re = (ClientMessage) SerializationHelper.deserialize(arr);
-            if(re.getID() == r.getID()) System.out.println("Marshalling Ok");
+            if (re.getID() == r.getID()) System.out.println("Marshalling Ok");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
 
-       // Testing Server Socket & Client Socket
+        // Testing Server Socket & Client Socket
         //ClientMessage(ClientMessageType type, int id, InetAddress ip, int port, InetAddress receiverIp, int receiverPort, Object requestData)
         //ServerMessage(InetAddress ip, int port, InetAddress receiverIp, int receiverPort, int requestID, Object data){
 
-      ClientSocket client = null;
+        ClientSocket client = null;
         ServerSocket server = null;
         try {
             client = new ClientSocket(Constants.CLIENT_COMM_PORT);
@@ -63,7 +63,7 @@ public class Main {
                 System.out.println("Client socket send request correctly");
                 ServerMessage rep = new ServerMessage(clientClientMessage.GetIPAddress(), clientClientMessage.GetPort(),
                         clientClientMessage.getReceiverIp(), clientClientMessage.getReceiverPort(),
-                        clientClientMessage.getID(), new Game(1,"Host","Visitor"));
+                        clientClientMessage.getID(), new Game(1, "Host", "Visitor"));
                 server.Send(rep);
                 ServerMessage serverServerMessage = client.GetMessage();
                 if (serverServerMessage.getRequestID() == req.getID()) {

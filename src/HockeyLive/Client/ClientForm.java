@@ -58,7 +58,7 @@ public class ClientForm {
         MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                if (MatchList.getSelectedIndex() != -1){
+                if (MatchList.getSelectedIndex() != -1) {
                     Game selectedGame = (Game) MatchList.getSelectedValue();
                     txtHostName.setText(selectedGame.getHost());
                     txtVisitorName.setText(selectedGame.getVisitor());
