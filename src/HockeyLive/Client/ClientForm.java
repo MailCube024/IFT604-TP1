@@ -1,5 +1,10 @@
 package HockeyLive.Client;
 
+import HockeyLive.Client.Communication.ClientSocket;
+import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ClientMessageType;
+import HockeyLive.Common.Communication.ServerMessage;
+import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.*;
 
 import javax.swing.*;
@@ -7,8 +12,12 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Michaël Beaulieu         13048132
@@ -43,30 +52,11 @@ public class ClientForm {
     private JList VisitorScorerList;
 
     private Game SelectedGame;
+    private List<GameInfo> GameInfoList;
 
     public ClientForm() {
-        /**For test purpose creating a List with stuff in it. REMOVE AFTER TEST IS DONE.**/
-        ArrayList<Game> testListGame = new ArrayList<Game>();
-        ArrayList<GameInfo> testListGameInfo = new ArrayList<GameInfo>();
 
-        testListGame.add(new Game(1, "Montreal", "Ottawa"));
-        GameInfo info1 = new GameInfo(1, 20);
-        info1.addHostGoals(new Goal("Montreal player #56"));
-        info1.addHostGoals(new Goal("Montreal player #56"));
-        info1.addHostGoals(new Goal("Montreal player #32"));
-        info1.addVisitorGoals(new Goal("Ottawa player #87"));
-        info1.addHostPenalties(new Penalty("Montreal player #45", Duration.ofMinutes(2)));
-        info1.addVisitorPenalties(new Penalty("Ottawa player #22", Duration.ofMinutes(10)));
-        info1.addVisitorPenalties(new Penalty("Ottawa player #53", Duration.ofMinutes(2)));
-        testListGameInfo.add(info1);
-
-        testListGame.add(new Game(2, "Vancouver", "Calgary"));
-        testListGameInfo.add(new GameInfo(2, 10));
-        testListGame.add(new Game(3, "San-Jose", "St-Louis"));
-        testListGameInfo.add(new GameInfo(3, 10));
-        MatchList.setListData(testListGame.toArray());
-
-        /****************************************************************************/
+        GameInfoList = new ArrayList<GameInfo>();
 
         MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -81,31 +71,11 @@ public class ClientForm {
                     /********************************************************************************************/
                     //Normally we will make a request with the GameID here.
                     //Create a thread for the request.
-                    //And receive de GameInfo.
+                    //And receive the GameInfo.
                     /********************************************************************************************/
 
-                    /**Test GameInfo get here. Remove this after test is done. Keep some logic for the thread refresh**/
-                    GameInfo selectedGameInfo;
-
-                    for (GameInfo gi : testListGameInfo) {
-                        if (gi.getGameID() == SelectedGame.getGameID()) {
-                            selectedGameInfo = gi;
-                            txtPeriod.setText(String.valueOf(selectedGameInfo.getPeriod()));
-
-                            String minutes = String.valueOf(selectedGameInfo.getPeriodChronometer().getSeconds() / 60);
-                            String seconds = String.format("%02d", selectedGameInfo.getPeriodChronometer().getSeconds() % 60);
-
-                            txtTimer.setText(String.format("%s:%s", minutes, seconds));
-                            txtHostGoals.setText(String.valueOf(selectedGameInfo.getHostGoalsTotal()));
-                            txtVisitorGoals.setText(String.valueOf(selectedGameInfo.getVisitorGoalsTotal()));
-                            HostScorerList.setListData(selectedGameInfo.getHostGoals().toArray());
-                            VisitorScorerList.setListData(selectedGameInfo.getVisitorGoals().toArray());
-                            HostPenaltiesList.setListData(selectedGameInfo.getHostPenalties().toArray());
-                            VisitorPenaltiesList.setListData(selectedGameInfo.getVisitorPenalties().toArray());
-                            break;
-                        }
-                    }
-                    /**********************************************/
+                    GameInfo selectedGameInfo = Client.RequestGameInfo(SelectedGame.getGameID());
+                    updateGameInfo(selectedGameInfo);
                 }
             }
         });
@@ -117,6 +87,9 @@ public class ClientForm {
                 //Execute a request to the server for a refresh of the GameInfo.
                 //Reset automatic refresh timer.
                 /*********************************************************************/
+
+                GameInfo selectedGameInfo = Client.RequestGameInfo(SelectedGame.getGameID());
+                updateGameInfo(selectedGameInfo);
             }
         });
 
@@ -132,6 +105,8 @@ public class ClientForm {
                         /**********************************/
 
                         Bet newBet = new Bet(amount, SelectedGame.getHost(), SelectedGame.getGameID());
+                        Client.SendBet(newBet);
+
                         System.out.println("You just bet on the host team.");
                     } else if (VisitorRadioButton.isSelected()) {
 
@@ -140,6 +115,8 @@ public class ClientForm {
                         /**********************************/
 
                         Bet newBet = new Bet(amount, SelectedGame.getVisitor(), SelectedGame.getGameID());
+                        Client.SendBet(newBet);
+
                         System.out.println("You just bet on the visitor team.");
 
                     } else {
@@ -153,9 +130,35 @@ public class ClientForm {
         });
     }
 
+    private void updateGameInfo(GameInfo info) {
+        if (! GameInfoList.contains(info)) {
+            GameInfoList.add(info);
+        }
+
+        for (GameInfo gi : GameInfoList) {
+            if (gi.getGameID() == SelectedGame.getGameID()) {
+                info = gi;
+                txtPeriod.setText(String.valueOf(info.getPeriod()));
+
+                String minutes = String.valueOf(info.getPeriodChronometer().getSeconds() / 60);
+                String seconds = String.format("%02d", info.getPeriodChronometer().getSeconds() % 60);
+
+                txtTimer.setText(String.format("%s:%s", minutes, seconds));
+                txtHostGoals.setText(String.valueOf(info.getHostGoalsTotal()));
+                txtVisitorGoals.setText(String.valueOf(info.getVisitorGoalsTotal()));
+                HostScorerList.setListData(info.getHostGoals().toArray());
+                VisitorScorerList.setListData(info.getVisitorGoals().toArray());
+                HostPenaltiesList.setListData(info.getHostPenalties().toArray());
+                VisitorPenaltiesList.setListData(info.getVisitorPenalties().toArray());
+                break;
+            }
+        }
+    }
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("ClientForm");
-        frame.setContentPane(new ClientForm().MainPanel);
+        ClientForm form = new ClientForm();
+        frame.setContentPane(form.MainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -164,7 +167,8 @@ public class ClientForm {
         //Envoie d'une request au serveur pour la liste des matches du jour.
         //Au retour, binder la liste des matches.
         /****************************************************************************/
-
+        List<Game> gameList = Client.RequestGameList();
+        form.MatchList.setListData(gameList.toArray());
     }
 
     private void createUIComponents() {
