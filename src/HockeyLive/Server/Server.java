@@ -149,7 +149,7 @@ public class Server implements Runnable {
             }
         }
 
-        bet.setAmountGained(computeAmountGained(bet, game));
+        bet.setAmountGained(computeAmountGained(bet, game, info));
 
         ServerMessage serverMessage = new ServerMessage(message.GetIPAddress(),
                 message.GetPort(),
@@ -179,7 +179,7 @@ public class Server implements Runnable {
         }
     }
     
-    private double computeAmountGained(Bet bet, Game game) {
+    private double computeAmountGained(Bet bet, Game game, GameInfo info) {
         List<Bet> bets = placedBets.get(game.getGameID());
 
         double totalAmountHost = 0;
@@ -197,14 +197,14 @@ public class Server implements Runnable {
 
         double amountGained = 0;
 
-        if(game.getHostGoals() > game.getVisitorGoals()) {
+        if(info.getHostGoalsTotal() > info.getVisitorGoalsTotal()) {
             if(bet.getBetOn().equals(game.getHost())) {
                 amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountHost);
             } else {
                 amountGained = 0 - bet.getAmount();
             }
-        } else if(game.getHostGoals() < game.getVisitorGoals()) {
+        } else if(info.getHostGoalsTotal() < info.getVisitorGoalsTotal()) {
             if(bet.getBetOn().equals(game.getHost())) {
                 amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountVisitor);

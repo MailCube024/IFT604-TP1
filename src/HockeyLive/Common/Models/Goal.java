@@ -37,6 +37,6 @@ public class Goal {
     }
 
     public String toString(){
-        return String.format("%s, %d",GoalHolder, amount);
+        return String.format("%s,   %d",GoalHolder, amount);
     }
 }

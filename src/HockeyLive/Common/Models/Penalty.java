@@ -26,6 +26,6 @@ public class Penalty implements Serializable {
     public void decTimeLeft(Duration time) { this.TimeLeft.minus(time); }
 
     public String toString(){
-        return String.format("%s, %d : %d",PenaltyHolder, TimeLeft.toMinutes(), TimeLeft.getSeconds());
+        return String.format("%s, %d:%02d",PenaltyHolder, TimeLeft.getSeconds() / 60, TimeLeft.getSeconds() % 60);
     }
 }

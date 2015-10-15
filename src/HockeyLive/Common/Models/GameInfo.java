@@ -120,7 +120,11 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
-        return HostGoals.add(g);
+        if(HostGoals.add(g)){
+            this.HostGoalsTotal++;
+            return true;
+        }
+        return false;
     }
 
     public boolean removeHostGoals(Goal g) {
@@ -131,7 +135,11 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
-        return HostGoals.remove(g);
+        if(HostGoals.remove(g)){
+            this.HostGoalsTotal--;
+            return true;
+        }
+        return false;
     }
 
     public List<Goal> getVisitorGoals() {
@@ -150,7 +158,11 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
-        return VisitorGoals.add(g);
+        if(VisitorGoals.add(g)){
+            this.VisitorGoalsTotal++;
+            return true;
+        }
+        return false;
     }
 
     public boolean removeVisitorGoals(Goal g){
@@ -161,7 +173,11 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
-        return VisitorGoals.remove(g);
+        if(VisitorGoals.remove(g)){
+            this.VisitorGoalsTotal--;
+            return true;
+        }
+        return false;
     }
 
     public int getHostGoalsTotal() {
