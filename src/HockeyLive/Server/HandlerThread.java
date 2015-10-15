@@ -21,11 +21,11 @@ public class HandlerThread implements Runnable {
 
         switch (clientMessage.getType()) {
             case GetMatches:
-                replyData = server.GetMatches();
+                replyData = server.GetGames();
                 server.SendReply(clientMessage, replyData);
                 break;
             case GetMatchInfo:
-                replyData = server.GetMatchInfo(clientMessage.getData());
+                replyData = server.GetGameInfo(clientMessage.getData());
                 server.SendReply(clientMessage, replyData);
                 break;
             case PlaceBet:

@@ -26,7 +26,7 @@ public class ChronometerUpdateTask extends TimerTask {
     public void run() {
         server.LockForUpdate();
         for (Game g : server.GetNonCompletedGames()) {
-            GameInfo info = server.GetMatchInfo(g);
+            GameInfo info = server.GetGameInfo(g);
             info.decPeriodChronometer(Duration.ofSeconds(TICK_VALUE));
 
             //Verify if we have completed a period

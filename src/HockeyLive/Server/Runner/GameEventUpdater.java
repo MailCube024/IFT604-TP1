@@ -7,12 +7,12 @@ import java.util.Timer;
 /**
  * Created by Michaël on 10/14/2015.
  */
-public class MatchEventUpdater {
+public class GameEventUpdater {
     Timer timer;
 
-    public MatchEventUpdater(int seconds, Server server) {
+    public GameEventUpdater(int seconds, Server server) {
         timer = new Timer();
-        timer.schedule(new MatchEventUpdateTask(server), seconds * 1000);
+        timer.schedule(new GameEventUpdateTask(server), seconds * 1000);
     }
 
     public void StopChronometer() {

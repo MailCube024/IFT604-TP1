@@ -93,7 +93,7 @@ public class Server implements Runnable {
         }
     }
 
-    public synchronized List<Game> GetMatches() {
+    public synchronized List<Game> GetGames() {
         return runningGames;
     }
 
@@ -101,14 +101,14 @@ public class Server implements Runnable {
         return runningGames.stream().filter(g -> !g.isCompleted()).collect(Collectors.toList());
     }
 
-    public synchronized GameInfo GetMatchInfo(Game match) {
+    public synchronized GameInfo GetGameInfo(Game match) {
         return runningGameInfos.get(match);
     }
 
-    public synchronized GameInfo GetMatchInfo(Object match) {
+    public synchronized GameInfo GetGameInfo(Object match) {
         try {
             Game m = (Game) match;
-            return GetMatchInfo(m);
+            return GetGameInfo(m);
         } catch (Exception e) {
             return null;
         }
@@ -187,7 +187,7 @@ public class Server implements Runnable {
 
     private double ComputeAmountGained(Bet bet, Game game) {
         List<Bet> bets = placedBets.get(game.getGameID());
-        GameInfo info = GetMatchInfo(game);
+        GameInfo info = GetGameInfo(game);
 
         double totalAmountHost = 0;
         double totalAmountVisitor = 0;

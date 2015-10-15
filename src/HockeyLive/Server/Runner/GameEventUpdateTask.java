@@ -12,10 +12,10 @@ import java.util.TimerTask;
 /**
  * Created by Michaël on 10/14/2015.
  */
-public class MatchEventUpdateTask extends TimerTask {
+public class GameEventUpdateTask extends TimerTask {
     private final Server server;
 
-    public MatchEventUpdateTask(Server server) {
+    public GameEventUpdateTask(Server server) {
         this.server = server;
     }
 
@@ -23,7 +23,7 @@ public class MatchEventUpdateTask extends TimerTask {
     public void run() {
         server.LockForUpdate();
         for (Game g : server.GetNonCompletedGames()) {
-            GameInfo info = server.GetMatchInfo(g);
+            GameInfo info = server.GetGameInfo(g);
 
             TryAddGoal(info);
             TryAddPenalty(info);
