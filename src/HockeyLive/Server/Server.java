@@ -98,6 +98,17 @@ public class Server implements Runnable {
         return runningGames.stream().filter(g -> !g.isCompleted()).collect(Collectors.toList());
     }
 
+    public synchronized Game GetGameByID(Integer gameID) {
+        for (int i = 0; i < runningGames.size(); i++) {
+            Game g = runningGames.get(i);
+
+            if (g.getGameID() == gameID)
+                return g;
+        }
+
+        return null;
+    }
+
     public synchronized GameInfo GetGameInfo(Integer gameID) {
         return runningGameInfos.get(gameID);
     }
@@ -123,7 +134,7 @@ public class Server implements Runnable {
     }
 
     public synchronized void PlaceBet(Bet bet, ClientMessage message) {
-        Game game = runningGames.get(bet.getGameID());
+        Game game = GetGameByID(bet.getGameID());
         GameInfo info = runningGameInfos.get(game.getGameID());
 
         boolean added = false;
@@ -141,12 +152,15 @@ public class Server implements Runnable {
             (placedBets.get(bet.getGameID())).add(bet);
         }
 
-        socket.Send(new ServerMessage(localhost, Constants.SERVER_COMM_PORT,
-                message.GetIPAddress(), message.GetPort(), message.getID(), added));
+        socket.Send(new ServerMessage(message.GetIPAddress(), message.GetPort(),
+                message.getReceiverIp(), message.getReceiverPort(),
+                message.getID(), added));
 
         while (info.getPeriod() <= 3) {
             try {
-                game.wait();
+                synchronized(game) {
+                    game.wait();
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
