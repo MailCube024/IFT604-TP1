@@ -108,7 +108,11 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
-        return HostGoals.add(g);
+        if(HostGoals.add(g)){
+            this.HostGoalsTotal++;
+            return true;
+        }
+        return false;
     }
 
     public List<Goal> getVisitorGoals() {
@@ -126,7 +130,7 @@ public class GameInfo implements Serializable {
         return VisitorGoals.add(g);
     }
 
-    public int getHostGoalsTotal() {
+       public int getHostGoalsTotal() {
         return HostGoalsTotal;
     }
 
@@ -134,30 +138,7 @@ public class GameInfo implements Serializable {
         return VisitorGoalsTotal;
     }
 
-    public List<Goal> getSideGoals(Side side) {
-        return (side == Side.Host) ? HostGoals : VisitorGoals;
-    }
-
-    public boolean addSideGoal(Goal g, Side side) {
-        if (side == Side.Host) {
-            return addHostGoals(g);
-        } else {
-            return addVisitorGoals(g);
-        }
-    }
-
-    public void addSidePenalty(Penalty p, Side side) {
-        if (side == Side.Host) addHostPenalties(p);
-        else addVisitorPenalties(p);
-    }
-
-    public List<Penalty> getSidePenalties(Side side) {
-        if (side == Side.Host) return getHostPenalties();
-        else return getVisitorPenalties();
-    }
-
-    public boolean removeSidePenalty(Penalty p, Side side) {
-        if (side == Side.Host) return removeHostPenalties(p);
-        else return removeVisitorPenalties(p);
+    public void setVisitorGoalsTotal(int visitorGoalsTotal) {
+        VisitorGoalsTotal = visitorGoalsTotal;
     }
 }
