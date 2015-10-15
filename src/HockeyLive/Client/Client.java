@@ -5,7 +5,9 @@ import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Communication.ClientMessageType;
 import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Constants;
+import HockeyLive.Common.Models.Bet;
 import HockeyLive.Common.Models.Game;
+import HockeyLive.Common.Models.GameInfo;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -63,5 +65,45 @@ public class Client {
         }
 
         return new ArrayList<Game>();
+    }
+
+    public static GameInfo RequestGameInfo(Integer gameID) {
+        ClientMessage message = new ClientMessage(ClientMessageType.GetMatchInfo, 2,
+                GetLocalhost(), Constants.SERVER_COMM_PORT,
+                GetLocalhost(), Constants.CLIENT_COMM_PORT,
+                gameID);
+
+        GetSocket().Send(message);
+
+        try {
+            ServerMessage serverMessage = GetSocket().GetMessage();
+            GameInfo gameInfo = (GameInfo)serverMessage.getData();
+
+            return gameInfo;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static boolean SendBet(Bet bet) {
+        ClientMessage message = new ClientMessage(ClientMessageType.PlaceBet, 3,
+                GetLocalhost(), Constants.SERVER_COMM_PORT,
+                GetLocalhost(), Constants.CLIENT_COMM_PORT,
+                bet);
+
+        GetSocket().Send(message);
+
+        try {
+            ServerMessage serverMessage = GetSocket().GetMessage();
+            boolean betRegistered = (boolean)serverMessage.getData();
+
+            return betRegistered;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

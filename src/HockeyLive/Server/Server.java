@@ -98,14 +98,14 @@ public class Server implements Runnable {
         return runningGames.stream().filter(g -> !g.isCompleted()).collect(Collectors.toList());
     }
 
-    public synchronized GameInfo GetGameInfo(Game match) {
-        return runningGameInfos.get(match);
+    public synchronized GameInfo GetGameInfo(Integer gameID) {
+        return runningGameInfos.get(gameID);
     }
 
-    public synchronized GameInfo GetGameInfo(Object match) {
+    public synchronized GameInfo GetGameInfo(Object gameID) {
         try {
-            Game m = (Game) match;
-            return GetGameInfo(m);
+            Integer g = (Integer)gameID;
+            return GetGameInfo(g);
         } catch (Exception e) {
             return null;
         }
