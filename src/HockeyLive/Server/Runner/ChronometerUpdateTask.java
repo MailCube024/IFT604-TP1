@@ -35,6 +35,9 @@ public class ChronometerUpdateTask extends TimerTask {
                 // If chronometer is 0 and period is currently 3
                 if (info.getPeriod() == 3) {
                     g.setCompleted(true);
+                    synchronized (g) {
+                        g.notifyAll();
+                    }
                     info.setPeriodChronometer(Duration.ofMinutes(0));
                 } else
                     info.incPeriod();

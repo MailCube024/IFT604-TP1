@@ -18,14 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Created by Michaï¿½l on 10/12/2015.
  */
 public class Server implements Runnable {
     private static int UPDATE_INTERVAL = 30;    //in seconds
@@ -59,18 +59,15 @@ public class Server implements Runnable {
     public void execute() {
         try {
             socket = new ServerSocket(Constants.SERVER_COMM_PORT);
-            Executor threadPool = Executors.newCachedThreadPool();
-
-            //threadPool.execute(cmdHandler);
+            ExecutorService threadPool = Executors.newCachedThreadPool();
 
             while (true) {
-                socket.Receive();
 
                 try {
                     ClientMessage clientMessage = socket.GetMessage();
 
                     Runnable handler = new HandlerThread(this, clientMessage);
-                    threadPool.execute(handler);
+                    threadPool.submit(handler);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -108,14 +105,25 @@ public class Server implements Runnable {
         return runningGames.stream().filter(g -> !g.isCompleted()).collect(Collectors.toList());
     }
 
-    public synchronized GameInfo GetGameInfo(Game match) {
-        return runningGameInfos.get(match);
+    public synchronized Game GetGameByID(Integer gameID) {
+        for (int i = 0; i < runningGames.size(); i++) {
+            Game g = runningGames.get(i);
+
+            if (g.getGameID() == gameID)
+                return g;
+        }
+
+        return null;
     }
 
-    public synchronized GameInfo GetGameInfo(Object match) {
+    public synchronized GameInfo GetGameInfo(Integer gameID) {
+        return runningGameInfos.get(gameID);
+    }
+
+    public synchronized GameInfo GetGameInfo(Object gameID) {
         try {
-            Game m = (Game) match;
-            return GetGameInfo(m);
+            Integer g = (Integer)gameID;
+            return GetGameInfo(g);
         } catch (Exception e) {
             return null;
         }
@@ -133,7 +141,7 @@ public class Server implements Runnable {
     }
 
     public synchronized void PlaceBet(Bet bet, ClientMessage message) {
-        Game game = runningGames.get(bet.getGameID());
+        Game game = GetGameByID(bet.getGameID());
         GameInfo info = runningGameInfos.get(game.getGameID());
 
         boolean added = false;
@@ -151,12 +159,15 @@ public class Server implements Runnable {
             (placedBets.get(bet.getGameID())).add(bet);
         }
 
-        socket.Send(new ServerMessage(localhost, Constants.SERVER_COMM_PORT,
-                message.GetIPAddress(), message.GetPort(), message.getID(), added));
+        socket.Send(new ServerMessage(message.GetIPAddress(), message.GetPort(),
+                message.getReceiverIp(), message.getReceiverPort(),
+                message.getID(), added));
 
         while (info.getPeriod() <= 3) {
             try {
-                game.wait();
+                synchronized(game) {
+                    game.wait();
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
