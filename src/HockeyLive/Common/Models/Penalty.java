@@ -45,9 +45,6 @@ public class Penalty implements Serializable {
     }
 
     public String toString() {
-        return String.format("%s, %d : %d", PenaltyHolder, TimeLeft.toMinutes(), TimeLeft.getSeconds());
-
-    public String toString() {
         return String.format("%s, %d:%02d", PenaltyHolder, TimeLeft.getSeconds() / 60, TimeLeft.getSeconds() % 60);
     }
 }
