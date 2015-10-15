@@ -27,8 +27,6 @@ public class GameEventUpdateTask extends TimerTask {
 
             TryAddGoal(info);
             TryAddPenalty(info);
-
-            //TODO: Do we create game to fill completed games?
         }
         server.UnlockUpdates();
     }
