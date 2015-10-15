@@ -3,10 +3,7 @@ package HockeyLive.Server;
 import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Constants;
-import HockeyLive.Common.Models.Bet;
-import HockeyLive.Common.Models.Game;
-import HockeyLive.Common.Models.GameInfo;
-import HockeyLive.Common.Models.Penalty;
+import HockeyLive.Common.Models.*;
 import HockeyLive.Server.Communication.ServerSocket;
 
 import java.io.IOException;
@@ -15,16 +12,13 @@ import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Created by Michaï¿½l on 10/12/2015.
  */
 public class Server implements Runnable {
-    private List<Game> runningGames;
+    private ArrayList<Game> runningGames;
     private ConcurrentMap<Game,GameInfo> runningGameInfos;
     private ConcurrentMap<Integer,List<Bet>> placedBets;
     private ConcurrentMap<Integer,ConcurrentMap<InetAddress,ConcurrentMap<Integer,ClientMessage>>> acks;
@@ -36,24 +30,41 @@ public class Server implements Runnable {
         runningGameInfos = new ConcurrentHashMap<>();
         placedBets = new ConcurrentHashMap<>();
         acks = new ConcurrentHashMap<>();
+
+        /**For test purpose creating a List with stuff in it. REMOVE AFTER TEST IS DONE.**/
+        GameInfo info1 = new GameInfo(1, 20);
+        AddGame(new Game(1, "Montreal", "Ottawa"), info1);
+        info1.addHostGoals(new Goal("Montreal player #56"));
+        info1.addHostGoals(new Goal("Montreal player #56"));
+        info1.addHostGoals(new Goal("Montreal player #32"));
+        info1.addVisitorGoals(new Goal("Ottawa player #87"));
+        info1.addHostPenalties(new Penalty("Montreal player #45", Duration.ofMinutes(2)));
+        info1.addVisitorPenalties(new Penalty("Ottawa player #22", Duration.ofMinutes(10)));
+        info1.addVisitorPenalties(new Penalty("Ottawa player #53", Duration.ofMinutes(2)));
+
+        AddGame(new Game(2, "Vancouver", "Calgary"), new GameInfo(2, 10));
+        AddGame(new Game(3, "San-Jose", "St-Louis"), new GameInfo(3, 10));
+
+        /****************************************************************************/
+
     }
 
     public void execute() {
         try {
             socket = new ServerSocket(Constants.SERVER_COMM_PORT);
-            Executor threadPool = Executors.newCachedThreadPool();
+            ExecutorService threadPool = Executors.newCachedThreadPool();
 
             //threadPool.execute(cmdHandler);
 
             while (true)
             {
-                socket.Receive();
+                //socket.Receive();
 
                 try {
                     ClientMessage clientMessage = socket.GetMessage();
 
                     Runnable handler = new HandlerThread(this, clientMessage);
-                    threadPool.execute(handler);
+                    threadPool.submit(handler);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -70,6 +81,8 @@ public class Server implements Runnable {
                 clientMessage.getReceiverPort(),
                 clientMessage.getID(),
                 data);
+
+        socket.Send(serverMessage);
     }
 
     public synchronized void AddGame(Game game, GameInfo info) {
@@ -91,7 +104,7 @@ public class Server implements Runnable {
         }
     }
 
-    public synchronized List<Game> GetMatches() {
+    public synchronized ArrayList<Game> GetMatches() {
         return runningGames;
     }
 

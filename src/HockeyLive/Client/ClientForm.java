@@ -1,5 +1,10 @@
 package HockeyLive.Client;
 
+import HockeyLive.Client.Communication.ClientSocket;
+import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ClientMessageType;
+import HockeyLive.Common.Communication.ServerMessage;
+import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.*;
 
 import javax.swing.*;
@@ -7,6 +12,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.ArrayList;
 
@@ -42,11 +50,12 @@ public class ClientForm {
     private JList HostScorerList;
     private JList VisitorScorerList;
 
+    private ClientSocket socket;
     private Game SelectedGame;
 
     public ClientForm() {
         /**For test purpose creating a List with stuff in it. REMOVE AFTER TEST IS DONE.**/
-        ArrayList<Game> testListGame = new ArrayList<Game>();
+        /*ArrayList<Game> testListGame = new ArrayList<Game>();
         ArrayList<GameInfo> testListGameInfo = new ArrayList<GameInfo>();
 
         testListGame.add(new Game(1, "Montreal", "Ottawa"));
@@ -64,7 +73,7 @@ public class ClientForm {
         testListGameInfo.add(new GameInfo(2, 10));
         testListGame.add(new Game(3, "San-Jose", "St-Louis"));
         testListGameInfo.add(new GameInfo(3, 10));
-        MatchList.setListData(testListGame.toArray());
+        MatchList.setListData(testListGame.toArray());*/
 
         /****************************************************************************/
 
@@ -87,7 +96,7 @@ public class ClientForm {
                     /**Test GameInfo get here. Remove this after test is done. Keep some logic for the thread refresh**/
                     GameInfo selectedGameInfo;
 
-                    for (GameInfo gi : testListGameInfo) {
+                    /*for (GameInfo gi : testListGameInfo) {
                         if (gi.getGameID() == SelectedGame.getGameID()) {
                             selectedGameInfo = gi;
                             txtPeriod.setText(String.valueOf(selectedGameInfo.getPeriod()));
@@ -104,7 +113,7 @@ public class ClientForm {
                             VisitorPenaltiesList.setListData(selectedGameInfo.getVisitorPenalties().toArray());
                             break;
                         }
-                    }
+                    }*/
                     /**********************************************/
                 }
             }
@@ -155,7 +164,8 @@ public class ClientForm {
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("ClientForm");
-        frame.setContentPane(new ClientForm().MainPanel);
+        ClientForm form = new ClientForm();
+        frame.setContentPane(form.MainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
@@ -164,7 +174,8 @@ public class ClientForm {
         //Envoie d'une request au serveur pour la liste des matches du jour.
         //Au retour, binder la liste des matches.
         /****************************************************************************/
-
+        ArrayList<Game> gameList = Client.RequestGameList();
+        form.MatchList.setListData(gameList.toArray());
     }
 
     private void createUIComponents() {
