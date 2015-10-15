@@ -253,4 +253,8 @@ public class Server implements Runnable {
     public void UnlockUpdates() {
         gameUpdateLock.unlock();
     }
+
+    public void SetPeriodLength(int minutes) {
+        GameFactory.UpdatePeriodLength(minutes);
+    }
 }
