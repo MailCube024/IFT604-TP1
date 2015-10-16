@@ -41,9 +41,7 @@ public class ChronometerUpdateTask implements Runnable {
                     g.setCompleted(true);
                     System.out.println("Game " + g.toString() + " is completed - No more time");
                     info.setPeriodChronometer(Duration.ofMinutes(0));
-                    synchronized (g) {
-                        g.notifyAll();
-                    }
+                    server.notifyBets(g);
                 } else {
                     info.incPeriod();
                     System.out.println("Going to period (" + info.getPeriod() + ") for game " + g.toString());

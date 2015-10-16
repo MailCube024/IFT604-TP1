@@ -128,6 +128,10 @@ public class Server implements Runnable {
         return null;
     }
 
+    public synchronized List<Bet> GetGameBets(Game game) {
+        return placedBets.get(game.getGameID());
+    }
+
     public synchronized GameInfo GetGameInfo(Integer gameID) {
         return runningGameInfos.get(gameID);
     }
@@ -183,8 +187,8 @@ public class Server implements Runnable {
 
         while (info.getPeriod() <= 3) {
             try {
-                synchronized(game) {
-                    game.wait();
+                synchronized(bet) {
+                    bet.wait();
                 }
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -226,6 +230,14 @@ public class Server implements Runnable {
             PlaceBet(b, message);
         } catch (Exception e) {
             SendReply(message, false);
+        }
+    }
+
+    public synchronized void notifyBets(Game game) {
+        for(Bet bet : GetGameBets(game)) {
+            synchronized (bet) {
+                bet.notify();
+            }
         }
     }
 

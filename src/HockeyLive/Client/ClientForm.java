@@ -52,11 +52,8 @@ public class ClientForm {
     private JList VisitorScorerList;
 
     private Game SelectedGame;
-    private List<GameInfo> GameInfoList;
 
     public ClientForm() {
-
-        GameInfoList = new ArrayList<GameInfo>();
 
         MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -131,28 +128,18 @@ public class ClientForm {
     }
 
     private void updateGameInfo(GameInfo info) {
-        if (! GameInfoList.contains(info)) {
-            GameInfoList.add(info);
-        }
+        txtPeriod.setText(String.valueOf(info.getPeriod()));
 
-        for (GameInfo gi : GameInfoList) {
-            if (gi.getGameID() == SelectedGame.getGameID()) {
-                info = gi;
-                txtPeriod.setText(String.valueOf(info.getPeriod()));
+        String minutes = String.valueOf(info.getPeriodChronometer().getSeconds() / 60);
+        String seconds = String.format("%02d", info.getPeriodChronometer().getSeconds() % 60);
 
-                String minutes = String.valueOf(info.getPeriodChronometer().getSeconds() / 60);
-                String seconds = String.format("%02d", info.getPeriodChronometer().getSeconds() % 60);
-
-                txtTimer.setText(String.format("%s:%s", minutes, seconds));
-                txtHostGoals.setText(String.valueOf(info.getHostGoalsTotal()));
-                txtVisitorGoals.setText(String.valueOf(info.getVisitorGoalsTotal()));
-                HostScorerList.setListData(info.getHostGoals().toArray());
-                VisitorScorerList.setListData(info.getVisitorGoals().toArray());
-                HostPenaltiesList.setListData(info.getHostPenalties().toArray());
-                VisitorPenaltiesList.setListData(info.getVisitorPenalties().toArray());
-                break;
-            }
-        }
+        txtTimer.setText(String.format("%s:%s", minutes, seconds));
+        txtHostGoals.setText(String.valueOf(info.getHostGoalsTotal()));
+        txtVisitorGoals.setText(String.valueOf(info.getVisitorGoalsTotal()));
+        HostScorerList.setListData(info.getHostGoals().toArray());
+        VisitorScorerList.setListData(info.getVisitorGoals().toArray());
+        HostPenaltiesList.setListData(info.getHostPenalties().toArray());
+        VisitorPenaltiesList.setListData(info.getVisitorPenalties().toArray());
     }
 
     public static void main(String[] args) {
