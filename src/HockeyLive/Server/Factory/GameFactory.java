@@ -14,7 +14,7 @@ import java.util.Random;
 public class GameFactory {
     private static final double P_GOAL = 1. / 10;
     private static final double P_EVEN = 1. / 2;
-    private static final double P_PENALTY = 1. / 10;
+    private static final double P_PENALTY = 1. / 15;
     private static final double P_PENALTY_LENGTH = 4. / 5;
     private static final Random generator = new Random();
     private static final String[] TEAM_NAMES =
