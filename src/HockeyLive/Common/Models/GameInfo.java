@@ -108,6 +108,7 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
+        HostGoalsTotal++;
         return HostGoals.add(g);
     }
 
@@ -123,6 +124,7 @@ public class GameInfo implements Serializable {
                 return true;
             }
         }
+        VisitorGoalsTotal++;
         return VisitorGoals.add(g);
     }
 
