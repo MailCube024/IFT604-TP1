@@ -90,7 +90,7 @@ public class Server implements Runnable {
         try {
             socket.Send(serverMessage);
         } catch (IOException e) {
-            System.out.println("SendReply : Socket error occured - closing socket");
+            System.out.println("SendReply : Socket error occured - Not sending message");
             return;
         }
     }
