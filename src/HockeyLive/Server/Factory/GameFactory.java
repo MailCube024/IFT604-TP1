@@ -27,7 +27,7 @@ public class GameFactory {
     private static int periodLength = 20;  // in minutes
     private static int playerNo = 0;
 
-    private static List<String> teams = new ArrayList<>(Arrays.asList(TEAM_NAMES));
+    private static List<String> teams;
 
     private static int GetNextID() {
         return ++gameId;
@@ -66,18 +66,20 @@ public class GameFactory {
 
         //We add a goal to the team
         Side side = GetSide();
-        Goal g;
+        Goal g = null;
 
-        if (generator.nextDouble() > P_EVEN) {
+        if ((generator.nextDouble() > P_EVEN)) {
             //Create a new goal for side
             g = new Goal("Player " + GetNextPlayerNo());
-            info.getSideGoals(side);
+            info.addSideGoal(g, side);
         } else {
             //Add a goal value to a random goal
             List<Goal> goals = info.getSideGoals(side);
-            int index = generator.nextInt(goals.size());
-            g = goals.get(index);
-            info.addSideGoal(g, side);
+            if (goals.size() > 0) {
+                int index = generator.nextInt(goals.size());
+                g = goals.get(index);
+                info.addSideGoal(g, side);
+            }
         }
 
         return g;
@@ -89,9 +91,13 @@ public class GameFactory {
         // We add penalty to the team;
         Side side = GetSide();
         Duration d = Duration.ofMinutes((generator.nextDouble() > P_PENALTY_LENGTH) ? Penalty.LONG_PENALTY : Penalty.SHORT_PENALTY);
-        Penalty p = new Penalty("Player Name", d);
+        Penalty p = new Penalty("Player Name " + GetNextPlayerNo(), d);
         info.addSidePenalty(p, side);
 
         return null;
+    }
+
+    public static void Initialize() {
+        teams = new ArrayList<>(Arrays.asList(TEAM_NAMES));
     }
 }

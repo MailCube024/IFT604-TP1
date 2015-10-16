@@ -102,7 +102,7 @@ public class GameInfo implements Serializable {
 
     public boolean addHostGoals(Goal g) {
         for (Goal goal : HostGoals) {
-            if (goal.getGoalHolder().equals(g.getGoalHolder())) {
+            if (goal.getGoalHolder().equalsIgnoreCase(g.getGoalHolder())) {
                 goal.incAmount();
                 HostGoalsTotal++;
                 return true;
@@ -117,7 +117,7 @@ public class GameInfo implements Serializable {
 
     public boolean addVisitorGoals(Goal g) {
         for (Goal goal : VisitorGoals) {
-            if (goal.getGoalHolder().equals(g.getGoalHolder())) {
+            if (goal.getGoalHolder().equalsIgnoreCase(g.getGoalHolder())) {
                 goal.incAmount();
                 VisitorGoalsTotal++;
                 return true;

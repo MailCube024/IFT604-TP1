@@ -7,12 +7,10 @@ import HockeyLive.Common.Models.Penalty;
 import HockeyLive.Server.Factory.GameFactory;
 import HockeyLive.Server.Server;
 
-import java.util.TimerTask;
-
 /**
  * Created by Michaël on 10/14/2015.
  */
-public class GameEventUpdateTask extends TimerTask {
+public class GameEventUpdateTask implements Runnable {
     private final Server server;
 
     public GameEventUpdateTask(Server server) {
@@ -22,26 +20,37 @@ public class GameEventUpdateTask extends TimerTask {
     @Override
     public void run() {
         server.LockForUpdate();
+        System.out.println("Event update : Obtained lock");
         for (Game g : server.GetNonCompletedGames()) {
-            GameInfo info = server.GetGameInfo(g);
+            GameInfo info = server.GetGameInfo(g.getGameID());
 
-            TryAddGoal(info);
-            TryAddPenalty(info);
+            Goal go = TryAddGoal(info);
+            if (go != null) {
+                System.out.println("Added goal " + go.toString() + " in game " + g.toString());
+            }
+
+            Penalty p = TryAddPenalty(info);
+            if (p != null) {
+                System.out.println("Added penalty " + p.toString() + " in game " + g.toString());
+            }
         }
+        System.out.println("Event update : Releasing lock");
         server.UnlockUpdates();
     }
 
-    private void TryAddGoal(GameInfo info) {
+    private Goal TryAddGoal(GameInfo info) {
         Goal g = GameFactory.TryCreateGoal(info);
-        if (g == null) return;
+        if (g == null) return null;
 
         //TODO: Created a goal for a team => Prepare a notification for Android client
+        return g;
     }
 
-    private void TryAddPenalty(GameInfo info) {
+    private Penalty TryAddPenalty(GameInfo info) {
         Penalty p = GameFactory.TryCreatePenalty(info);
-        if (p == null) return;
+        if (p == null) return null;
 
         //TODO: Created a penalty for a team => Prepare a notification for Android client
+        return p;
     }
 }
