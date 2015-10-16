@@ -177,7 +177,7 @@ public class Server implements Runnable {
                     message.getID(), added));
         } catch (IOException e) {
             System.out.println("PlaceBet: Error on socket send");
-            socket.CloseSocket();
+            e.printStackTrace();
             return;
         }
 
@@ -207,7 +207,8 @@ public class Server implements Runnable {
             try {
                 socket.Send(serverMessage);
             } catch (IOException e) {
-                System.out.println("PlaceBet: Error with socket - Closing.");
+                System.out.println("PlaceBet: Error sending message requiring ack.");
+                e.printStackTrace();
                 return;
             }
 
