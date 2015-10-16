@@ -27,7 +27,7 @@ public class ServerSocket {
     }
 
     public void Receive() {
-        byte[] receiveData = new byte[1024];
+        byte[] receiveData = new byte[4096];
         while (true) {
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             try {
@@ -45,6 +45,7 @@ public class ServerSocket {
     public void Send(ServerMessage serverMessage) throws IOException {
         byte[] data = SerializationHelper.serialize(serverMessage);
         DatagramPacket packet = new DatagramPacket(data, data.length, serverMessage.getReceiverIp(), serverMessage.getReceiverPort());
+        System.out.println("Sending " + data.length + " bytes");
         epSocket.send(packet);
     }
 

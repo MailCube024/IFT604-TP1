@@ -242,11 +242,6 @@ public class Server implements Runnable {
     }
 
     public synchronized void notifyBets(Game game) {
-        /*for(Bet bet : GetGameBets(game)) {
-            synchronized (bet) {
-                bet.notify();
-            }
-        }*/
         gamesCompleted.get(game.getGameID()).signalAll();
     }
 
