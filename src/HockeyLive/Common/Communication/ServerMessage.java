@@ -7,6 +7,7 @@ import java.net.InetAddress;
  * Created by Michaël on 10/12/2015.
  */
 public class ServerMessage implements Serializable {
+    private ServerMessageType type;
 
     private InetAddress senderIp;
     private int senderPort;
@@ -15,7 +16,8 @@ public class ServerMessage implements Serializable {
     private int requestID;
     private Object data;
 
-    public ServerMessage(InetAddress ip, int port, InetAddress receiverIp, int receiverPort, int requestID, Object data){
+    public ServerMessage(ServerMessageType type, InetAddress ip, int port, InetAddress receiverIp, int receiverPort, int requestID, Object data) {
+        this.type = type;
         senderIp = ip;
         senderPort = port;
         this.receiverIp = receiverIp;
@@ -49,5 +51,7 @@ public class ServerMessage implements Serializable {
     }
 
 
-
+    public ServerMessageType getType() {
+        return type;
+    }
 }

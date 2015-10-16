@@ -17,7 +17,7 @@ public class Chronometer {
 
     public Chronometer(int seconds, Server server) {
         task = new ChronometerUpdateTask(server);
-        executor = Executors.newScheduledThreadPool(1);
+        executor = Executors.newSingleThreadScheduledExecutor();
         schedule = executor.scheduleWithFixedDelay(task, seconds, seconds, TimeUnit.SECONDS);
     }
 

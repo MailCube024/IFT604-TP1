@@ -2,6 +2,7 @@ package HockeyLive.Server;
 
 import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Communication.ServerMessage;
+import HockeyLive.Common.Communication.ServerMessageType;
 import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.Bet;
 import HockeyLive.Common.Models.Game;
@@ -79,8 +80,8 @@ public class Server implements Runnable {
         }
     }
 
-    public void SendReply(ClientMessage clientMessage, Object data) {
-        ServerMessage serverMessage = new ServerMessage(clientMessage.GetIPAddress(),
+    public void SendReply(ServerMessageType type, ClientMessage clientMessage, Object data) {
+        ServerMessage serverMessage = new ServerMessage(type, clientMessage.GetIPAddress(),
                 clientMessage.GetPort(),
                 clientMessage.getReceiverIp(),
                 clientMessage.getReceiverPort(),
@@ -172,8 +173,11 @@ public class Server implements Runnable {
         }
 
         try {
-            socket.Send(new ServerMessage(message.GetIPAddress(), message.GetPort(),
-                    message.getReceiverIp(), message.getReceiverPort(),
+            socket.Send(new ServerMessage(ServerMessageType.BetConfirmation,
+                    message.GetIPAddress(),
+                    message.GetPort(),
+                    message.getReceiverIp(),
+                    message.getReceiverPort(),
                     message.getID(), added));
         } catch (IOException e) {
             System.out.println("PlaceBet: Error on socket send");
@@ -193,7 +197,8 @@ public class Server implements Runnable {
 
         bet.setAmountGained(ComputeAmountGained(bet, game));
 
-        ServerMessage serverMessage = new ServerMessage(message.GetIPAddress(),
+        ServerMessage serverMessage = new ServerMessage(ServerMessageType.BetResult,
+                message.GetIPAddress(),
                 message.GetPort(),
                 message.getReceiverIp(),
                 message.getReceiverPort(),
@@ -225,7 +230,7 @@ public class Server implements Runnable {
             Bet b = (Bet) bet;
             PlaceBet(b, message);
         } catch (Exception e) {
-            SendReply(message, false);
+            SendReply(ServerMessageType.BetConfirmation, message, false);
         }
     }
 

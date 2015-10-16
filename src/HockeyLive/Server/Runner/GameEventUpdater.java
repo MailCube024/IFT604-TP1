@@ -17,7 +17,7 @@ public class GameEventUpdater {
 
     public GameEventUpdater(int seconds, Server server) {
         task = new GameEventUpdateTask(server);
-        executor = Executors.newScheduledThreadPool(1);
+        executor = Executors.newSingleThreadScheduledExecutor();
         schedule = executor.scheduleWithFixedDelay(task, seconds, seconds, TimeUnit.SECONDS);
     }
 

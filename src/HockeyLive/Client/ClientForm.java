@@ -1,14 +1,19 @@
 package HockeyLive.Client;
 
+import HockeyLive.Client.Communication.Client;
+import HockeyLive.Client.Listeners.BetConfirmationListener;
+import HockeyLive.Client.Listeners.BetUpdateListener;
+import HockeyLive.Client.Listeners.GameInfoUpdateListener;
+import HockeyLive.Client.Listeners.GameListUpdateListener;
+import HockeyLive.Client.Refresh.GameInfoRefresher;
 import HockeyLive.Common.Models.Bet;
 import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.Models.GameInfo;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,7 +22,8 @@ import java.util.List;
  * Benoit Jeunehomme        13055392
  * Bruno-Pier Touchette     13045732
  */
-public class ClientForm {
+public class ClientForm implements GameInfoUpdateListener, GameListUpdateListener, BetConfirmationListener, BetUpdateListener {
+    private final int PERIODIC_REFRESH = 2; // in minutes
     private JPanel MainPanel;
     private JList MatchList;
     private JPanel MatchInfoPanel;
@@ -43,104 +49,136 @@ public class ClientForm {
     private JList VisitorPenaltiesList;
     private JList HostScorerList;
     private JList VisitorScorerList;
-
     private Game SelectedGame;
     private List<GameInfo> GameInfoList;
+    private Client client;
+    private GameInfoRefresher refresher;
 
     public ClientForm() {
+        GameInfoList = new ArrayList<>();
 
-        GameInfoList = new ArrayList<GameInfo>();
+        MatchList.addListSelectionListener(e -> {
+            if (MatchList.getSelectedIndex() != -1) {
+                cmdRefresh.setEnabled(true);
+                cmdPlaceBet.setEnabled(true);
+                SelectedGame = (Game) MatchList.getSelectedValue();
+                refresher.UpdateSelectedGame(SelectedGame.getGameID());
+                txtHostName.setText(SelectedGame.getHost());
+                txtVisitorName.setText(SelectedGame.getVisitor());
 
-        MatchList.addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                if (MatchList.getSelectedIndex() != -1) {
-                    cmdRefresh.setEnabled(true);
-                    cmdPlaceBet.setEnabled(true);
-                    SelectedGame = (Game) MatchList.getSelectedValue();
-                    txtHostName.setText(SelectedGame.getHost());
-                    txtVisitorName.setText(SelectedGame.getVisitor());
+                /********************************************************************************************/
+                //Normally we will make a request with the GameID here.
+                //Create a thread for the request.
+                //And receive the GameInfo.
+                /********************************************************************************************/
 
-                    /********************************************************************************************/
-                    //Normally we will make a request with the GameID here.
-                    //Create a thread for the request.
-                    //And receive the GameInfo.
-                    /********************************************************************************************/
-
-                    GameInfo selectedGameInfo = Client.RequestGameInfo(SelectedGame.getGameID());
-                    updateGameInfo(selectedGameInfo);
-                }
+                client.RequestGameInfo(SelectedGame.getGameID());
             }
         });
 
-        cmdRefresh.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                /*********************************************************************/
-                //Execute a request to the server for a refresh of the GameInfo.
-                //Reset automatic refresh timer.
-                /*********************************************************************/
-
-                GameInfo selectedGameInfo = Client.RequestGameInfo(SelectedGame.getGameID());
-                updateGameInfo(selectedGameInfo);
-            }
+        /*********************************************************************/
+        //Execute a request to the server for a refresh of the GameInfo.
+        //Reset automatic refresh timer.
+        /*********************************************************************/
+        cmdRefresh.addActionListener(e -> {
+            client.RequestGameInfo(SelectedGame.getGameID());
+            refresher.Reset();
         });
 
-        cmdPlaceBet.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Double amount = Double.valueOf(txtBetAmount.getText().equals("") ? "0" : txtBetAmount.getText());
-                if (amount != 0) {
-                    if (HostRadioButton.isSelected()) {
-
-                        Bet newBet = new Bet(amount, SelectedGame.getHost(), SelectedGame.getGameID());
-                        Client.SendBet(newBet);
-
-                        System.out.println("You just bet on the host team.");
-                    } else if (VisitorRadioButton.isSelected()) {
-
-                        Bet newBet = new Bet(amount, SelectedGame.getVisitor(), SelectedGame.getGameID());
-                        Client.SendBet(newBet);
-
-                        System.out.println("You just bet on the visitor team.");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Please select a team to bet on.");
-                    }
+        cmdPlaceBet.addActionListener(e -> {
+            Double amount = Double.valueOf(txtBetAmount.getText().equals("") ? "0" : txtBetAmount.getText());
+            if (amount != 0) {
+                if (HostRadioButton.isSelected() || VisitorRadioButton.isSelected()) {
+                    boolean hostSelected = HostRadioButton.isSelected();
+                    Bet newBet = new Bet(amount, hostSelected ? SelectedGame.getHost() : SelectedGame.getVisitor(), SelectedGame.getGameID());
+                    client.SendBet(newBet);
+                    System.out.println(String.format("You just bet on the %s team.", (hostSelected ? " host " : " visitor ")));
                 } else {
-                    JOptionPane.showMessageDialog(null, "Please enter an amount to bet.");
+                    JOptionPane.showMessageDialog(null, "Please select a team to bet on.");
                 }
+            } else {
+                JOptionPane.showMessageDialog(null, "Please enter an amount to bet.");
             }
         });
-    }
-
-    private void updateGameInfo(GameInfo info) {
-        txtPeriod.setText(String.valueOf(info.getPeriod()));
-
-        String minutes = String.valueOf(info.getPeriodChronometer().getSeconds() / 60);
-        String seconds = String.format("%02d", info.getPeriodChronometer().getSeconds() % 60);
-
-        txtTimer.setText(String.format("%s:%s", minutes, seconds));
-        txtHostGoals.setText(String.valueOf(info.getHostGoalsTotal()));
-        txtVisitorGoals.setText(String.valueOf(info.getVisitorGoalsTotal()));
-        HostScorerList.setListData(info.getHostGoals().toArray());
-        VisitorScorerList.setListData(info.getVisitorGoals().toArray());
-        HostPenaltiesList.setListData(info.getHostPenalties().toArray());
-        VisitorPenaltiesList.setListData(info.getVisitorPenalties().toArray());
     }
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("ClientForm");
         ClientForm form = new ClientForm();
+        form.InitializeClient();
+        form.InitializeRefresher();
         frame.setContentPane(form.MainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
-        frame.setVisible(true);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                form.Close();
+                System.exit(0);
+            }
+        });
 
-        List<Game> gameList = Client.RequestGameList();
-        form.MatchList.setListData(gameList.toArray());
+        form.RequestGameList();
+        frame.setVisible(true);
+    }
+
+    public void InitializeClient() {
+        client = new Client();
+        client.AddGameListUpdateListener(this);
+        client.AddGameInfoUpdateListener(this);
+        client.AddBetConfirmationListener(this);
+        client.AddBetUpdateListener(this);
+        client.Start();
+    }
+
+    private void InitializeRefresher() {
+        refresher = new GameInfoRefresher(PERIODIC_REFRESH, client);
+    }
+
+    private void Close() {
+        client.UnregisterListeners();
+        refresher.Stop();
+        client.Close();
+    }
+
+    private void RequestGameList() {
+        client.RequestGameList();
     }
 
     private void createUIComponents() {
         MainPanel = new JPanel();
+    }
+
+    @Override
+    public void UpdateGameInfo(GameInfo info) {
+        EventQueue.invokeLater(() -> {
+            txtPeriod.setText(String.valueOf(info.getPeriod()));
+
+            String minutes = String.valueOf(info.getPeriodChronometer().getSeconds() / 60);
+            String seconds = String.format("%02d", info.getPeriodChronometer().getSeconds() % 60);
+
+            txtTimer.setText(String.format("%s:%s", minutes, seconds));
+            txtHostGoals.setText(String.valueOf(info.getHostGoalsTotal()));
+            txtVisitorGoals.setText(String.valueOf(info.getVisitorGoalsTotal()));
+            HostScorerList.setListData(info.getHostGoals().toArray());
+            VisitorScorerList.setListData(info.getVisitorGoals().toArray());
+            HostPenaltiesList.setListData(info.getHostPenalties().toArray());
+            VisitorPenaltiesList.setListData(info.getVisitorPenalties().toArray());
+        });
+    }
+
+    @Override
+    public void UpdateGameList(List<Game> games) {
+        EventQueue.invokeLater(() -> MatchList.setListData(games.toArray()));
+    }
+
+    @Override
+    public void IsBetConfirmed(boolean betConfirmation) {
+        //TODO: Do Something with bet received true or false
+    }
+
+    @Override
+    public void BetUpdate(Bet bet) {
+        //TODO: Do something with bet result
     }
 }

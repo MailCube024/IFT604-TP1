@@ -2,6 +2,7 @@ import HockeyLive.Client.Communication.ClientSocket;
 import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Communication.ClientMessageType;
 import HockeyLive.Common.Communication.ServerMessage;
+import HockeyLive.Common.Communication.ServerMessageType;
 import HockeyLive.Common.Constants;
 import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.Models.GameInfo;
@@ -143,7 +144,7 @@ public class Main {
 
             if (clientClientMessage.getID() == req.getID()) {
                 System.out.println("Client socket send request OK");
-                ServerMessage rep = new ServerMessage(clientClientMessage.GetIPAddress(), clientClientMessage.GetPort(),
+                ServerMessage rep = new ServerMessage(ServerMessageType.ReturnGames, clientClientMessage.GetIPAddress(), clientClientMessage.GetPort(),
                         clientClientMessage.getReceiverIp(), clientClientMessage.getReceiverPort(),
                         clientClientMessage.getID(), new Game(1, "Host", "Visitor"));
                 server.Send(rep);

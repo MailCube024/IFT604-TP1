@@ -1,6 +1,7 @@
 package HockeyLive.Server;
 
 import HockeyLive.Common.Communication.ClientMessage;
+import HockeyLive.Common.Communication.ServerMessageType;
 
 /**
  * Created by Benoit on 2015-10-13.
@@ -22,11 +23,11 @@ public class HandlerThread implements Runnable {
         switch (clientMessage.getType()) {
             case GetMatches:
                 replyData = server.GetGames();
-                server.SendReply(clientMessage, replyData);
+                server.SendReply(ServerMessageType.ReturnGames, clientMessage, replyData);
                 break;
             case GetMatchInfo:
                 replyData = server.GetGameInfo(clientMessage.getData());
-                server.SendReply(clientMessage, replyData);
+                server.SendReply(ServerMessageType.ReturnGameInfo, clientMessage, replyData);
                 break;
             case PlaceBet:
                 server.PlaceBet(clientMessage.getData(), clientMessage);
