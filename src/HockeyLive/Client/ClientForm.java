@@ -11,6 +11,8 @@ import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.Models.GameInfo;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -50,12 +52,12 @@ public class ClientForm implements GameInfoUpdateListener, GameListUpdateListene
     private JList HostScorerList;
     private JList VisitorScorerList;
     private Game SelectedGame;
+
     private List<GameInfo> GameInfoList;
     private Client client;
     private GameInfoRefresher refresher;
 
     public ClientForm() {
-        GameInfoList = new ArrayList<>();
 
         MatchList.addListSelectionListener(e -> {
             if (MatchList.getSelectedIndex() != -1) {

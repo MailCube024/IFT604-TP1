@@ -17,10 +17,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -32,9 +30,11 @@ public class Server implements Runnable {
     private static int UPDATE_INTERVAL = 30;    //in seconds
 
     private List<Game> runningGames;
+    private ConcurrentMap<Integer, Condition> gamesCompleted;
     private ConcurrentMap<Integer, GameInfo> runningGameInfos;
     private ConcurrentMap<Integer, List<Bet>> placedBets;
     private ConcurrentMap<Integer, ConcurrentMap<InetAddress, ConcurrentMap<Integer, ClientMessage>>> acks;
+    private Condition acksCondition;
     private ServerSocket socket;
 
     private Thread serverThread;
@@ -129,6 +129,10 @@ public class Server implements Runnable {
         return null;
     }
 
+    public synchronized List<Bet> GetGameBets(Game game) {
+        return placedBets.get(game.getGameID());
+    }
+
     public synchronized GameInfo GetGameInfo(Integer gameID) {
         return runningGameInfos.get(gameID);
     }
@@ -150,14 +154,12 @@ public class Server implements Runnable {
         ConcurrentMap<Integer, ClientMessage> addressAcks = gameAcks.get(message.GetIPAddress());
         addressAcks.put(message.GetPort(), message);
 
-        acks.notifyAll();
+        acksCondition.signalAll();
     }
 
     public synchronized void PlaceBet(Bet bet, ClientMessage message) {
         Game game = GetGameByID(bet.getGameID());
         GameInfo info = runningGameInfos.get(game.getGameID());
-
-        boolean added = false;
 
         InetAddress localhost;
         try {
@@ -166,6 +168,8 @@ public class Server implements Runnable {
             e.printStackTrace();
             return;
         }
+
+        boolean added = false;
 
         if (info.getPeriod() <= 2) {
             added = true;
@@ -187,9 +191,10 @@ public class Server implements Runnable {
 
         while (info.getPeriod() <= 3) {
             try {
-                synchronized(game) {
-                    game.wait();
-                }
+                /*synchronized(bet) {
+                   bet.wait();
+                }*/
+                gamesCompleted.get(game.getGameID()).await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -205,6 +210,8 @@ public class Server implements Runnable {
                 message.getID(),
                 bet);
 
+
+
         while (!(acks.containsKey(game.getGameID())
                 && acks.get(game.getGameID()).containsKey(message.GetIPAddress())
                 && acks.get(game.getGameID()).get(message.GetIPAddress()).containsKey(message.GetPort()))) {
@@ -218,7 +225,7 @@ public class Server implements Runnable {
             }
 
             try {
-                acks.wait(5000);
+                acksCondition.await(5, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -232,6 +239,15 @@ public class Server implements Runnable {
         } catch (Exception e) {
             SendReply(ServerMessageType.BetConfirmation, message, false);
         }
+    }
+
+    public synchronized void notifyBets(Game game) {
+        /*for(Bet bet : GetGameBets(game)) {
+            synchronized (bet) {
+                bet.notify();
+            }
+        }*/
+        gamesCompleted.get(game.getGameID()).signalAll();
     }
 
     private double ComputeAmountGained(Bet bet, Game game) {
