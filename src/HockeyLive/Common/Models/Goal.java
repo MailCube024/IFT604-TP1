@@ -1,9 +1,11 @@
 package HockeyLive.Common.Models;
 
+import java.io.Serializable;
+
 /**
  * Created by Bruno-Pier on 2015-10-14.
  */
-public class Goal {
+public class Goal implements Serializable {
     private String GoalHolder;
     private int amount;
 
