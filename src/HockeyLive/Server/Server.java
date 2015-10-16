@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
- * Created by Micha�l on 10/12/2015.
+ * Created by Michael on 10/12/2015.
  */
 public class Server implements Runnable {
     private static int UPDATE_INTERVAL = 30;    //in seconds
@@ -69,7 +69,9 @@ public class Server implements Runnable {
                     Runnable handler = new HandlerThread(this, clientMessage);
                     threadPool.submit(handler);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println("Thread receiving message interrupted");
+                    socket.CloseSocket();
+                    break;
                 }
             }
         } catch (IOException e) {
@@ -85,7 +87,12 @@ public class Server implements Runnable {
                 clientMessage.getID(),
                 data);
 
-        socket.Send(serverMessage);
+        try {
+            socket.Send(serverMessage);
+        } catch (IOException e) {
+            System.out.println("SendReply : Socket error occured - closing socket");
+            return;
+        }
     }
 
     public synchronized void AddGame(Game game, GameInfo info) {
@@ -99,6 +106,10 @@ public class Server implements Runnable {
 
     public synchronized List<Game> GetGames() {
         return runningGames;
+    }
+
+    public synchronized List<GameInfo> GetGameInfos() {
+        return runningGameInfos.values().stream().collect(Collectors.toList());
     }
 
     public synchronized List<Game> GetNonCompletedGames() {
@@ -159,9 +170,15 @@ public class Server implements Runnable {
             (placedBets.get(bet.getGameID())).add(bet);
         }
 
-        socket.Send(new ServerMessage(message.GetIPAddress(), message.GetPort(),
-                message.getReceiverIp(), message.getReceiverPort(),
-                message.getID(), added));
+        try {
+            socket.Send(new ServerMessage(message.GetIPAddress(), message.GetPort(),
+                    message.getReceiverIp(), message.getReceiverPort(),
+                    message.getID(), added));
+        } catch (IOException e) {
+            System.out.println("PlaceBet: Error on socket send");
+            socket.CloseSocket();
+            return;
+        }
 
         while (info.getPeriod() <= 3) {
             try {
@@ -185,7 +202,14 @@ public class Server implements Runnable {
         while (!(acks.containsKey(game.getGameID())
                 && acks.get(game.getGameID()).containsKey(message.GetIPAddress())
                 && acks.get(game.getGameID()).get(message.GetIPAddress()).containsKey(message.GetPort()))) {
-            socket.Send(serverMessage);
+
+            try {
+                socket.Send(serverMessage);
+            } catch (IOException e) {
+                System.out.println("PlaceBet: Error with socket - Closing.");
+                return;
+            }
+
             try {
                 acks.wait(5000);
             } catch (InterruptedException e) {
@@ -258,6 +282,7 @@ public class Server implements Runnable {
         runningGameInfos.clear();
         acks.clear();
         placedBets.clear();
+        GameFactory.Initialize();
         InitializeGames();
     }
 
@@ -272,8 +297,8 @@ public class Server implements Runnable {
     public void stop() {
         eventUpdater.Stop();
         chronometer.Stop();
+        if (socket != null) socket.CloseSocket();
         serverThread.interrupt();
-        socket.CloseSocket();
     }
 
     public void LockForUpdate() {

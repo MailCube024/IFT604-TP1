@@ -9,12 +9,11 @@ import HockeyLive.Server.Server;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 
 /**
  * Created by Michaël on 10/14/2015.
  */
-public class ChronometerUpdateTask extends TimerTask {
+public class ChronometerUpdateTask implements Runnable {
     private final Server server;
     private final int TICK_VALUE = 30;
 
@@ -25,9 +24,14 @@ public class ChronometerUpdateTask extends TimerTask {
     @Override
     public void run() {
         server.LockForUpdate();
+        System.out.println("Obtained lock to update");
         for (Game g : server.GetNonCompletedGames()) {
-            GameInfo info = server.GetGameInfo(g);
+            System.out.println("Altering " + g.toString());
+            GameInfo info = server.GetGameInfo(g.getGameID());
+
+            System.out.println("Chronometer before :" + info.getPeriodChronometer().getSeconds());
             info.decPeriodChronometer(Duration.ofSeconds(TICK_VALUE));
+            System.out.println("Chronometer after :" + info.getPeriodChronometer().getSeconds());
 
             //Verify if we have completed a period
             Duration currentChronometer = info.getPeriodChronometer();
@@ -35,18 +39,22 @@ public class ChronometerUpdateTask extends TimerTask {
                 // If chronometer is 0 and period is currently 3
                 if (info.getPeriod() == 3) {
                     g.setCompleted(true);
+                    System.out.println("Game " + g.toString() + " is completed - No more time");
                     info.setPeriodChronometer(Duration.ofMinutes(0));
                     synchronized (g) {
                         g.notifyAll();
                     }
-                } else
+                } else {
                     info.incPeriod();
+                    System.out.println("Going to period (" + info.getPeriod() + ") for game " + g.toString());
+                }
             }
 
             // If completed, clear all penalties, update and remove completed penalties otherwise
             if (g.isCompleted()) ClearPenalties(info);
             else UpdateAllPenalties(info);
         }
+        System.out.println("Releasing lock to update");
         server.UnlockUpdates();
     }
 

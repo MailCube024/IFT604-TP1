@@ -42,14 +42,10 @@ public class ServerSocket {
         }
     }
 
-    public void Send(ServerMessage serverMessage) {
-        try {
-            byte[] data = SerializationHelper.serialize(serverMessage);
-            DatagramPacket packet = new DatagramPacket(data, data.length, serverMessage.getReceiverIp(), serverMessage.getReceiverPort());
-            epSocket.send(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public void Send(ServerMessage serverMessage) throws IOException {
+        byte[] data = SerializationHelper.serialize(serverMessage);
+        DatagramPacket packet = new DatagramPacket(data, data.length, serverMessage.getReceiverIp(), serverMessage.getReceiverPort());
+        epSocket.send(packet);
     }
 
     public ClientMessage GetMessage() throws InterruptedException {
