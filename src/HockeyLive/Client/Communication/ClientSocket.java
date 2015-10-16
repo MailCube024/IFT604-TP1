@@ -29,7 +29,7 @@ public class ClientSocket {
     }
 
     public void Receive() {
-        byte[] receiveData = new byte[1024];
+        byte[] receiveData = new byte[4096];
         while (true) {
             DatagramPacket packet = new DatagramPacket(receiveData, receiveData.length);
             try {
