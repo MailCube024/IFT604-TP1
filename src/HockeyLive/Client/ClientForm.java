@@ -45,11 +45,8 @@ public class ClientForm {
     private JList VisitorScorerList;
 
     private Game SelectedGame;
-    private List<GameInfo> GameInfoList;
 
     public ClientForm() {
-
-        GameInfoList = new ArrayList<GameInfo>();
 
         MatchList.addListSelectionListener(new ListSelectionListener() {
             @Override
