@@ -91,6 +91,7 @@ public class Server implements Runnable {
             socket.Send(serverMessage);
         } catch (IOException e) {
             System.out.println("SendReply : Socket error occured - Not sending message");
+            e.printStackTrace();
             return;
         }
     }
