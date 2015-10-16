@@ -21,27 +21,27 @@ public class Penalty implements Serializable {
     }
 
     public String getPenaltyHolder() {
-        return this.PenaltyHolder;
+        return PenaltyHolder;
     }
 
     public void setPenaltyHolder(String penaltyHolder) {
-        this.PenaltyHolder = penaltyHolder;
+        PenaltyHolder = penaltyHolder;
     }
 
     public Duration getTimeLeft() {
-        return this.TimeLeft;
+        return TimeLeft;
     }
 
     public void setTimeLeft(Duration timeLeft) {
-        this.TimeLeft = timeLeft;
+        TimeLeft = timeLeft;
     }
 
     public void incTimeLeft(Duration time) {
-        this.TimeLeft.plus(time);
+        TimeLeft = TimeLeft.plus(time);
     }
 
     public void decTimeLeft(Duration time) {
-        this.TimeLeft.minus(time);
+        TimeLeft = TimeLeft.minus(time);
     }
 
     public String toString() {
