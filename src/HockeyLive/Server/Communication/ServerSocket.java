@@ -45,7 +45,6 @@ public class ServerSocket {
     public void Send(ServerMessage serverMessage) throws IOException {
         byte[] data = SerializationHelper.serialize(serverMessage);
         DatagramPacket packet = new DatagramPacket(data, data.length, serverMessage.getReceiverIp(), serverMessage.getReceiverPort());
-        System.out.println("Sending " + data.length + " bytes");
         epSocket.send(packet);
     }
 

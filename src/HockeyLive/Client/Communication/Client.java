@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Michaël Beaulieu         13048132
+ * Michaï¿½l Beaulieu         13048132
  * Benoit Jeunehomme        13055392
  * Bruno-Pier Touchette     13045732
  */
@@ -107,6 +107,13 @@ public class Client {
     public void ReceiveBet(Bet bet) {
         for (BetUpdateListener l : betUpdateListeners)
             l.BetUpdate(bet);
+
+        ClientMessage message = new ClientMessage(ClientMessageType.AckNotification, 4,
+                GetLocalhost(), Constants.SERVER_COMM_PORT,
+                GetLocalhost(), Constants.CLIENT_COMM_PORT,
+                bet);
+
+        GetSocket().Send(message);
     }
 
     public void ReceiveGameList(List<Game> games) {

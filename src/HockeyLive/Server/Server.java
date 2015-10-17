@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
@@ -49,6 +50,7 @@ public class Server implements Runnable {
         placedBets = new ConcurrentHashMap<>();
         gameUpdateLock = new ReentrantLock();
         acks = new ConcurrentHashMap<>();
+        gamesCompleted = new ConcurrentHashMap<>();
         Initialize();
     }
 
@@ -103,6 +105,7 @@ public class Server implements Runnable {
             runningGameInfos.put(game.getGameID(), info);
             placedBets.put(game.getGameID(), new ArrayList<>());
             acks.put(game.getGameID(), new ConcurrentHashMap<>());
+            gamesCompleted.put(game.getGameID(), gameUpdateLock.newCondition());
         }
     }
 
@@ -157,7 +160,7 @@ public class Server implements Runnable {
         acksCondition.signalAll();
     }
 
-    public synchronized void PlaceBet(Bet bet, ClientMessage message) {
+    public void PlaceBet(Bet bet, ClientMessage message) {
         Game game = GetGameByID(bet.getGameID());
         GameInfo info = runningGameInfos.get(game.getGameID());
 
@@ -189,14 +192,14 @@ public class Server implements Runnable {
             return;
         }
 
-        while (info.getPeriod() <= 3) {
+        while (info.getPeriod() != 3 && info.getPeriodChronometer().getSeconds() != 0) {
+            gameUpdateLock.lock();
             try {
-                /*synchronized(bet) {
-                   bet.wait();
-                }*/
                 gamesCompleted.get(game.getGameID()).await();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            } finally {
+                gameUpdateLock.unlock();
             }
         }
 
@@ -232,7 +235,7 @@ public class Server implements Runnable {
         }
     }
 
-    public synchronized void PlaceBet(Object bet, ClientMessage message) {
+    public void PlaceBet(Object bet, ClientMessage message) {
         try {
             Bet b = (Bet) bet;
             PlaceBet(b, message);
@@ -241,13 +244,13 @@ public class Server implements Runnable {
         }
     }
 
-    public synchronized void notifyBets(Game game) {
+    public void notifyBets(Game game) {
         gamesCompleted.get(game.getGameID()).signalAll();
     }
 
     private double ComputeAmountGained(Bet bet, Game game) {
         List<Bet> bets = placedBets.get(game.getGameID());
-        GameInfo info = GetGameInfo(game);
+        GameInfo info = GetGameInfo(game.getGameID());
 
         double totalAmountHost = 0;
         double totalAmountVisitor = 0;
@@ -272,7 +275,7 @@ public class Server implements Runnable {
                 amountGained = 0 - bet.getAmount();
             }
         } else if (info.getHostGoalsTotal() < info.getVisitorGoalsTotal()) {
-            if (bet.getBetOn().equals(game.getHost())) {
+            if (bet.getBetOn().equals(game.getVisitor())) {
                 amountGained = 0.75 * (totalAmountHost + totalAmountVisitor)
                         * (bet.getAmount() / totalAmountVisitor);
             } else {
