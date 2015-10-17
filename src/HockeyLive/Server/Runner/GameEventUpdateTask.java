@@ -21,21 +21,26 @@ public class GameEventUpdateTask implements Runnable {
     public void run() {
         server.LockForUpdate();
         System.out.println("Event update : Obtained lock");
-        for (Game g : server.GetNonCompletedGames()) {
-            GameInfo info = server.GetGameInfo(g.getGameID());
 
-            Goal go = TryAddGoal(info);
-            if (go != null) {
-                System.out.println("Added goal " + go.toString() + " in game " + g.toString());
-            }
+        try {
+            for (Game g : server.GetNonCompletedGames()) {
+                GameInfo info = server.GetGameInfo(g.getGameID());
 
-            Penalty p = TryAddPenalty(info);
-            if (p != null) {
-                System.out.println("Added penalty " + p.toString() + " in game " + g.toString());
+                Goal go = TryAddGoal(info);
+                if (go != null) {
+                    System.out.println("Added goal " + go.toString() + " in game " + g.toString());
+                }
+
+                Penalty p = TryAddPenalty(info);
+                if (p != null) {
+                    System.out.println("Added penalty " + p.toString() + " in game " + g.toString());
+                }
             }
         }
-        System.out.println("Event update : Releasing lock");
-        server.UnlockUpdates();
+        finally {
+            System.out.println("Event update : Releasing lock");
+            server.UnlockUpdates();
+        }
     }
 
     private Goal TryAddGoal(GameInfo info) {

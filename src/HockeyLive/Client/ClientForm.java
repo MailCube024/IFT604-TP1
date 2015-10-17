@@ -17,6 +17,7 @@ import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -51,11 +52,15 @@ public class ClientForm implements GameInfoUpdateListener, GameListUpdateListene
     private JList VisitorPenaltiesList;
     private JList HostScorerList;
     private JList VisitorScorerList;
+    private JLabel txtGain;
+    private JPanel GainPanel;
     private Game SelectedGame;
 
-    private List<GameInfo> GameInfoList;
     private Client client;
     private GameInfoRefresher refresher;
+
+    private HashMap<Integer, Double> betGains = new HashMap<>();
+    private List<Bet> betsReceived = new ArrayList<>();
 
     public ClientForm() {
 
@@ -166,6 +171,15 @@ public class ClientForm implements GameInfoUpdateListener, GameListUpdateListene
             VisitorScorerList.setListData(info.getVisitorGoals().toArray());
             HostPenaltiesList.setListData(info.getHostPenalties().toArray());
             VisitorPenaltiesList.setListData(info.getVisitorPenalties().toArray());
+
+            if(info.getPeriod() == 3) {
+                betGains.putIfAbsent(info.getGameID(), 0.0);
+                BetPanel.setVisible(false);
+                GainPanel.setVisible(true);
+                if (info.getPeriodChronometer().getSeconds() == 0) {
+                    txtGain.setText("Gain : " + betGains.get(info.getGameID()));
+                }
+            }
         });
     }
 
@@ -176,11 +190,17 @@ public class ClientForm implements GameInfoUpdateListener, GameListUpdateListene
 
     @Override
     public void IsBetConfirmed(boolean betConfirmation) {
-        //TODO: Do Something with bet received true or false
+        if(betConfirmation) {
+            txtBetAmount.setText("");
+        }
     }
 
     @Override
     public void BetUpdate(Bet bet) {
-        //TODO: Do something with bet result
+        if(! betsReceived.contains(bet)) {
+            betsReceived.add(bet);
+            Double oldGain = betGains.getOrDefault(bet.getGameID(), 0.0);
+            betGains.put(bet.getGameID(), oldGain + bet.getAmountGained());
+        }
     }
 }
