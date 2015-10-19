@@ -11,8 +11,6 @@ import HockeyLive.Common.Models.Game;
 import HockeyLive.Common.Models.GameInfo;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -161,10 +159,7 @@ public class ClientForm implements GameInfoUpdateListener, GameListUpdateListene
         EventQueue.invokeLater(() -> {
             txtPeriod.setText(String.valueOf(info.getPeriod()));
 
-            String minutes = String.valueOf(info.getPeriodChronometer().getSeconds() / 60);
-            String seconds = String.format("%02d", info.getPeriodChronometer().getSeconds() % 60);
-
-            txtTimer.setText(String.format("%s:%s", minutes, seconds));
+            txtTimer.setText(info.getPeriodFormattedChronometer());
             txtHostGoals.setText(String.valueOf(info.getHostGoalsTotal()));
             txtVisitorGoals.setText(String.valueOf(info.getVisitorGoalsTotal()));
             HostScorerList.setListData(info.getHostGoals().toArray());
@@ -176,7 +171,7 @@ public class ClientForm implements GameInfoUpdateListener, GameListUpdateListene
                 betGains.putIfAbsent(info.getGameID(), 0.0);
                 BetPanel.setVisible(false);
                 GainPanel.setVisible(true);
-                if (info.getPeriodChronometer().getSeconds() == 0) {
+                if (info.getPeriodChronometer() == 0) {
                     txtGain.setText("Gain : " + betGains.get(info.getGameID()));
                 }
             }

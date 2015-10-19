@@ -3,7 +3,9 @@ package HockeyLive.Common.helpers;
 import java.io.*;
 
 /**
- * Created by Michaël on 10/13/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class SerializationHelper {
     public static Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {

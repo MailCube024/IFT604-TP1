@@ -23,7 +23,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 /**
- * Created by Michael on 10/12/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class Server implements Runnable {
     private static int UPDATE_INTERVAL = 30;    //in seconds
@@ -216,7 +218,7 @@ public class Server implements Runnable {
             return;
         }
 
-        while (info.getPeriod() != 3 && info.getPeriodChronometer().getSeconds() != 0) {
+        while (info.getPeriod() != 3 && info.getPeriodChronometer() != 0) {
             gameUpdateLock.lock();
             try {
                 gamesCompleted.get(game.getGameID()).await();

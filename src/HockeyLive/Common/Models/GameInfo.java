@@ -1,7 +1,6 @@
 package HockeyLive.Common.Models;
 
 import java.io.Serializable;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,7 +11,7 @@ import java.util.List;
  */
 public class GameInfo implements Serializable {
     private int GameID;
-    private Duration PeriodChronometer;
+    private int PeriodChronometer;              //in seconds
     private int Period;
     private List<Penalty> HostPenalties;
     private List<Penalty> VisitorPenalties;
@@ -24,7 +23,7 @@ public class GameInfo implements Serializable {
 
     public GameInfo(int id, int periodLength) {
         this.GameID = id;
-        this.PeriodChronometer = Duration.ofMinutes(periodLength);
+        this.PeriodChronometer = periodLength * 60;
         this.periodLength = periodLength;
         this.Period = 1;
         this.HostPenalties = new ArrayList<Penalty>();
@@ -39,20 +38,20 @@ public class GameInfo implements Serializable {
         return GameID;
     }
 
-    public Duration getPeriodChronometer() {
+    public int getPeriodChronometer() {
         return PeriodChronometer;
     }
 
-    public void setPeriodChronometer(Duration periodChronometer) {
+    public void setPeriodChronometer(int periodChronometer) {
         PeriodChronometer = periodChronometer;
     }
 
-    public void incPeriodChronometer(Duration time) {
-        PeriodChronometer = PeriodChronometer.plus(time);
+    public void incPeriodChronometer(int seconds) {
+        PeriodChronometer += seconds;
     }
 
-    public void decPeriodChronometer(Duration time) {
-        PeriodChronometer = PeriodChronometer.minus(time);
+    public void decPeriodChronometer(int seconds) {
+        PeriodChronometer -= seconds;
     }
 
     public int getPeriod() {
@@ -65,7 +64,7 @@ public class GameInfo implements Serializable {
 
     public void incPeriod() {
         Period++;
-        setPeriodChronometer(Duration.ofMinutes(periodLength));
+        setPeriodChronometer(periodLength * 60);
     }
 
     public void decPeriod() {
@@ -161,5 +160,9 @@ public class GameInfo implements Serializable {
     public boolean removeSidePenalty(Penalty p, Side side) {
         if (side == Side.Host) return removeHostPenalties(p);
         else return removeVisitorPenalties(p);
+    }
+
+    public String getPeriodFormattedChronometer() {
+        return String.format("%02d:%02d", PeriodChronometer / 60, PeriodChronometer % 60);
     }
 }

@@ -4,7 +4,9 @@ import java.io.Serializable;
 import java.net.InetAddress;
 
 /**
- * Created by Michaël on 10/12/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class ServerMessage implements Serializable {
     private ServerMessageType type;
