@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Micha�l Beaulieu         13048132
+ * Michaël Beaulieu         13048132
  * Benoit Jeunehomme        13055392
  * Bruno-Pier Touchette     13045732
  */

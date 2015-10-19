@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Micha�l on 10/14/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class ChronometerUpdateTask implements Runnable {
     private final Server server;

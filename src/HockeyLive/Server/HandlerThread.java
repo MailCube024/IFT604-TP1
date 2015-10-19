@@ -4,7 +4,9 @@ import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Communication.ServerMessageType;
 
 /**
- * Created by Benoit on 2015-10-13.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class HandlerThread implements Runnable {
 

@@ -3,7 +3,9 @@ package HockeyLive.Client.Refresh;
 import HockeyLive.Client.Communication.Client;
 
 /**
- * Created by Michaël on 10/16/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class GameInfoRefreshTask implements Runnable {
     private final Client client;

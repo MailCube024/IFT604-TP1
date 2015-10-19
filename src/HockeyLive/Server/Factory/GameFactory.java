@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Created by Michaël on 10/14/2015.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class GameFactory {
     private static final double P_GOAL = 1. / 10;
