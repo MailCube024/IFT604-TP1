@@ -314,9 +314,10 @@ public class Server implements Runnable {
 
     public void SendGoalNotification(Goal goal, GameInfo info) {
         Side side = info.getHostGoals().contains(goal) ? Side.Host : Side.Visitor;
+        Game game = GetGameByID(info.getGameID());
 
         List<Object> goalInfo = new ArrayList<>();
-        goalInfo.add(info.getGameID());
+        goalInfo.add(game);
         goalInfo.add(side);
         goalInfo.add(goal);
 
@@ -325,9 +326,10 @@ public class Server implements Runnable {
 
     public void SendPenaltyNotification(Penalty penalty, GameInfo info) {
         Side side = info.getHostPenalties().contains(penalty) ? Side.Host : Side.Visitor;
+        Game game = GetGameByID(info.getGameID());
 
         List<Object> penaltyInfo = new ArrayList<>();
-        penaltyInfo.add(info.getGameID());
+        penaltyInfo.add(game);
         penaltyInfo.add(side);
         penaltyInfo.add(penalty);
 
