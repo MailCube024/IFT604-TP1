@@ -3,7 +3,9 @@ package HockeyLive.Common.Models;
 import java.io.Serializable;
 
 /**
- * Created by Bruno-Pier on 2015-10-14.
+ * Michaël Beaulieu         13048132
+ * Benoit Jeunehomme        13055392
+ * Bruno-Pier Touchette     13045732
  */
 public class Goal implements Serializable {
     private String GoalHolder;
