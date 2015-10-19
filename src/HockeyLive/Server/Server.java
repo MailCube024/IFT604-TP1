@@ -57,6 +57,11 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) {
+        if (args.length > 0) {
+            int periodLength = Integer.parseInt(args[0]);
+            GameFactory.UpdatePeriodLength(periodLength);
+        }
+
         Server server = new Server();
         server.start();
     }
