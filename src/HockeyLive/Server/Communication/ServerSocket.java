@@ -33,7 +33,7 @@ public class ServerSocket {
             try {
                 if (tReceive.isInterrupted()) break;
                 epSocket.receive(packet);
-                ClientMessage req = (ClientMessage) SerializationHelper.deserialize(packet.getData());
+                ClientMessage req = new ClientMessage(packet);
                 clientMessageBuffer.put(req);
             } catch (Exception e) {
                 CloseSocket();
