@@ -163,6 +163,6 @@ public class GameInfo implements Serializable {
     }
 
     public String getPeriodFormattedChronometer() {
-        return String.format("%d02:%d02", PeriodChronometer / 60, PeriodChronometer % 60);
+        return String.format("%02d:%02d", PeriodChronometer / 60, PeriodChronometer % 60);
     }
 }

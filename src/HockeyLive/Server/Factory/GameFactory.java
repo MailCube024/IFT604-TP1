@@ -96,7 +96,7 @@ public class GameFactory {
         Penalty p = new Penalty("Player Name " + GetNextPlayerNo(), duration);
         info.addSidePenalty(p, side);
 
-        return null;
+        return p;
     }
 
     public static void Initialize() {
