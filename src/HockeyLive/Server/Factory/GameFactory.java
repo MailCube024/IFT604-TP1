@@ -2,7 +2,6 @@ package HockeyLive.Server.Factory;
 
 import HockeyLive.Common.Models.*;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,8 +92,8 @@ public class GameFactory {
 
         // We add penalty to the team;
         Side side = GetSide();
-        Duration d = Duration.ofMinutes((generator.nextDouble() > P_PENALTY_LENGTH) ? Penalty.LONG_PENALTY : Penalty.SHORT_PENALTY);
-        Penalty p = new Penalty("Player Name " + GetNextPlayerNo(), d);
+        int duration = ((generator.nextDouble() > P_PENALTY_LENGTH) ? Penalty.LONG_PENALTY : Penalty.SHORT_PENALTY) * 60;
+        Penalty p = new Penalty("Player Name " + GetNextPlayerNo(), duration);
         info.addSidePenalty(p, side);
 
         return null;

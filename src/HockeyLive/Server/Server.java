@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
@@ -194,7 +193,7 @@ public class Server implements Runnable {
             return;
         }
 
-        while (info.getPeriod() != 3 && info.getPeriodChronometer().getSeconds() != 0) {
+        while (info.getPeriod() != 3 && info.getPeriodChronometer() != 0) {
             gameUpdateLock.lock();
             try {
                 gamesCompleted.get(game.getGameID()).await();

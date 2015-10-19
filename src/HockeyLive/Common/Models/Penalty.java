@@ -1,7 +1,6 @@
 package HockeyLive.Common.Models;
 
 import java.io.Serializable;
-import java.time.Duration;
 
 /**
  * Michaël Beaulieu         13048132
@@ -13,9 +12,9 @@ public class Penalty implements Serializable {
     public static final int SHORT_PENALTY = 2;  // in minutes
 
     private String PenaltyHolder;
-    private Duration TimeLeft;
+    private int TimeLeft;
 
-    public Penalty(String holder, Duration time) {
+    public Penalty(String holder, int time) {
         this.PenaltyHolder = holder;
         this.TimeLeft = time;
     }
@@ -28,23 +27,23 @@ public class Penalty implements Serializable {
         PenaltyHolder = penaltyHolder;
     }
 
-    public Duration getTimeLeft() {
+    public int getTimeLeft() {
         return TimeLeft;
     }
 
-    public void setTimeLeft(Duration timeLeft) {
+    public void setTimeLeft(int timeLeft) {
         TimeLeft = timeLeft;
     }
 
-    public void incTimeLeft(Duration time) {
-        TimeLeft = TimeLeft.plus(time);
+    public void incTimeLeft(int seconds) {
+        TimeLeft += seconds;
     }
 
-    public void decTimeLeft(Duration time) {
-        TimeLeft = TimeLeft.minus(time);
+    public void decTimeLeft(int seconds) {
+        TimeLeft -= seconds;
     }
 
     public String toString() {
-        return String.format("%s, %d:%02d", PenaltyHolder, TimeLeft.getSeconds() / 60, TimeLeft.getSeconds() % 60);
+        return String.format("%s, %d:%02d", PenaltyHolder, TimeLeft / 60, TimeLeft % 60);
     }
 }

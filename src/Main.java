@@ -93,7 +93,7 @@ public class Main {
             } catch (InterruptedException e) {
             }
             GameInfo alteredInfo = server.GetGameInfo(game.getGameID());
-            assert !startInfo.getPeriodChronometer().equals(alteredInfo.getPeriodChronometer());
+            assert !(startInfo.getPeriodChronometer() == alteredInfo.getPeriodChronometer());
             System.out.println("Chronometer update OK");
         } finally {
             server.stop();
