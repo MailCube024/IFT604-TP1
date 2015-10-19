@@ -25,6 +25,7 @@ public class HandlerThread implements Runnable {
         switch (clientMessage.getType()) {
             case GetMatches:
                 replyData = server.GetGames();
+                server.AddClient(clientMessage.getReceiverIp(), clientMessage.getReceiverPort());
                 server.SendReply(ServerMessageType.ReturnGames, clientMessage, replyData);
                 break;
             case GetMatchInfo:

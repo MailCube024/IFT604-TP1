@@ -6,5 +6,5 @@ package HockeyLive.Common.Communication;
  * Bruno-Pier Touchette     13045732
  */
 public enum ServerMessageType {
-    ReturnGameInfo, ReturnGames, BetConfirmation, BetResult
+    ReturnGameInfo, ReturnGames, BetConfirmation, BetResult, GoalNotification, PenaltyNotification
 }
