@@ -4,19 +4,17 @@ import HockeyLive.Common.Communication.ClientMessage;
 import HockeyLive.Common.Communication.ServerMessage;
 import HockeyLive.Common.Communication.ServerMessageType;
 import HockeyLive.Common.Constants;
-import HockeyLive.Common.Models.Bet;
-import HockeyLive.Common.Models.Game;
-import HockeyLive.Common.Models.GameInfo;
+import HockeyLive.Common.Models.*;
 import HockeyLive.Server.Communication.ServerSocket;
 import HockeyLive.Server.Factory.GameFactory;
 import HockeyLive.Server.Runner.Chronometer;
 import HockeyLive.Server.Runner.GameEventUpdater;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.locks.Condition;
@@ -30,6 +28,7 @@ import java.util.stream.Collectors;
 public class Server implements Runnable {
     private static int UPDATE_INTERVAL = 30;    //in seconds
 
+    private List<Pair<InetAddress,Integer>> clientList;
     private List<Game> runningGames;
     private ConcurrentMap<Integer, Condition> gamesCompleted;
     private ConcurrentMap<Integer, GameInfo> runningGameInfos;
@@ -45,6 +44,7 @@ public class Server implements Runnable {
     private Lock gameUpdateLock;
 
     public Server() {
+        clientList = new ArrayList<>();
         runningGames = new ArrayList<>();
         runningGameInfos = new ConcurrentHashMap<>();
         placedBets = new ConcurrentHashMap<>();
@@ -99,6 +99,34 @@ public class Server implements Runnable {
         }
     }
 
+    public void SendMulti(ServerMessageType type, Object data) {
+        InetAddress localhost;
+        try {
+            localhost = InetAddress.getLocalHost();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        for (int i = 0; i < clientList.size(); i++) {
+            Pair<InetAddress,Integer> client = clientList.get(i);
+
+            ServerMessage serverMessage = new ServerMessage(type, localhost,
+                    Constants.SERVER_COMM_PORT,
+                    client.getKey(),
+                    client.getValue(),
+                    10,
+                    data);
+
+            try {
+                socket.Send(serverMessage);
+            } catch (IOException e) {
+                System.out.println("SendMulti : Socket error occured - Not sending message");
+                e.printStackTrace();
+             }
+        }
+    }
+
     public synchronized void AddGame(Game game, GameInfo info) {
         if (runningGames.size() < 10) {
             runningGames.add(game);
@@ -107,6 +135,10 @@ public class Server implements Runnable {
             acks.put(game.getGameID(), new ConcurrentHashMap<>());
             gamesCompleted.put(game.getGameID(), gameUpdateLock.newCondition());
         }
+    }
+
+    public synchronized void AddClient(InetAddress address, int port) {
+        clientList.add(new Pair<>(address, port));
     }
 
     public synchronized List<Game> GetGames() {
@@ -163,14 +195,6 @@ public class Server implements Runnable {
     public void PlaceBet(Bet bet, ClientMessage message) {
         Game game = GetGameByID(bet.getGameID());
         GameInfo info = runningGameInfos.get(game.getGameID());
-
-        InetAddress localhost;
-        try {
-            localhost = InetAddress.getLocalHost();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-            return;
-        }
 
         boolean added = false;
 
@@ -284,6 +308,28 @@ public class Server implements Runnable {
         }
 
         return amountGained;
+    }
+
+    public void SendGoalNotification(Goal goal, GameInfo info) {
+        Side side = info.getHostGoals().contains(goal) ? Side.Host : Side.Visitor;
+
+        List<Object> goalInfo = new ArrayList<>();
+        goalInfo.add(info.getGameID());
+        goalInfo.add(side);
+        goalInfo.add(goal);
+
+        SendMulti(ServerMessageType.GoalNotification, goalInfo);
+    }
+
+    public void SendPenaltyNotification(Penalty penalty, GameInfo info) {
+        Side side = info.getHostPenalties().contains(penalty) ? Side.Host : Side.Visitor;
+
+        List<Object> penaltyInfo = new ArrayList<>();
+        penaltyInfo.add(info.getGameID());
+        penaltyInfo.add(side);
+        penaltyInfo.add(penalty);
+
+        SendMulti(ServerMessageType.PenaltyNotification, penaltyInfo);
     }
 
     @Override
