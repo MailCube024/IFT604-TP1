@@ -49,7 +49,6 @@ public class GameEventUpdateTask implements Runnable {
         Goal g = GameFactory.TryCreateGoal(info);
         if (g == null) return null;
 
-        //TODO: Created a goal for a team => Prepare a notification for Android client
         server.SendGoalNotification(g, info);
         return g;
     }
@@ -58,7 +57,6 @@ public class GameEventUpdateTask implements Runnable {
         Penalty p = GameFactory.TryCreatePenalty(info);
         if (p == null) return null;
 
-        //TODO: Created a penalty for a team => Prepare a notification for Android client
         server.SendPenaltyNotification(p, info);
         return p;
     }

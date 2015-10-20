@@ -24,18 +24,6 @@ import java.util.List;
  */
 public class Client {
 
-    //TODO: Create a thread that takes messages from socket and sends it to UI Handling (see server handler thread)
-    //TODO: Create Task and Scheduler for refresh. Stop and Restart when pushing refresh button
-    /*
-    //get reference to the future
-    Future<?> future = service.scheduleAtFixedRate(runnable, INITIAL_DELAY, INTERVAL, TimeUnit.SECONDS)
-    //cancel instead of shutdown
-    future.cancel(true);
-    //schedule again (reuse)
-    future = service.scheduleAtFixedRate(runnable, INITIAL_DELAY, INTERVAL, TimeUnit.SECONDS)
-    //shutdown when you don't need to reuse the service anymore
-    service.shutdown()
-     */
     private List<GameInfoUpdateListener> gameInfoUpdateListeners;
     private List<GameListUpdateListener> gameListUpdateListeners;
     private List<BetConfirmationListener> betConfirmationListeners;
